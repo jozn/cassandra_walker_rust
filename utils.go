@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/kr/pretty"
 	"log"
 	"strings"
-
-	"github.com/kr/pretty"
 )
 
 func cqlTypesToGoType(sqlType string) (typ, org, def string) {
@@ -53,6 +52,7 @@ func cqlTypesToGoType(sqlType string) (typ, org, def string) {
 }
 
 func PertyPrint(a interface{}) {
+	//spew.Dump(a)
 	fmt.Printf("%# v \n", pretty.Formatter(a))
 }
 

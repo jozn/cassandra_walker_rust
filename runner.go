@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gocql/gocql"
 )
 
@@ -31,6 +32,7 @@ func Runner(arg *ConfigArgs) {
 
 	setTableParams(gen)
 
+	fmt.Println("==========================")
 	PertyPrint(gen)
 
 	build(gen)

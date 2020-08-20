@@ -31,7 +31,7 @@ func loadTables(keyspace string, cluster *gocql.ClusterConfig) []*Table {
 	m := make(map[string]interface{}, 100)
 	var tables []*Table
 	for iter.MapScan(m) {
-		PertyPrint(m)
+		//PertyPrint(m)
 		t := &Table{
 			TableName: (m["table_name"]).(string),
 			Keyspace:  (m["keyspace_name"]).(string),
