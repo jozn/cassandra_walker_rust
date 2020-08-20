@@ -1,4 +1,4 @@
-package cwalker
+package main
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package cwalker
+package main
 
 type ConfigArgs struct {
 	Keyspaces []string `arg:"positional,-k,help:cassandra keyspaces to build "`

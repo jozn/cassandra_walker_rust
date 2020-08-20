@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-
+	//"./cwalker"
 	"github.com/alexflint/go-arg"
-	"github.com/jozn/cassandra-walker/cwalker"
 )
 
 const (
@@ -15,7 +14,7 @@ const (
 )
 
 func main() {
-	args := &cwalker.ConfigArgs{}
+	args := &ConfigArgs{}
 	arg.MustParse(args)
 	if args.Host == "" {
 		args.Host = DEFAULT_CLUSTER_ADDRESS
@@ -33,7 +32,7 @@ func main() {
 		args.Dir = DEFAULT_OUTPUT
 	}
 
-	cwalker.Runner(args)
+	Runner(args)
 
 	fmt.Println(args)
 }
