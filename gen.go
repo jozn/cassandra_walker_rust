@@ -9,7 +9,7 @@ import (
 	"path"
 	"text/template"
 
-	"github.com/jozn/cassandra-walker/template_bind"
+	bind "github.com/jozn/cassandra-walker/template_bind"
 )
 
 func build(gen *GenOut) {
@@ -24,8 +24,8 @@ func build(gen *GenOut) {
 	if true {
 		e1 := exec.Command("gofmt", "-w", args.Dir).Run()
 		e2 := exec.Command("goimports", "-w", args.Dir).Run()
-		NoErr(e1)
-		NoErr(e2)
+		errLog("gofmt", e1)
+		errLog("goimports", e2)
 	}
 }
 

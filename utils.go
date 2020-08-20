@@ -61,3 +61,9 @@ func NoErr(err error) {
 		log.Panic(err)
 	}
 }
+
+func errLog(typ string, err error) {
+	if err != nil {
+		log.Printf("ERROR - %s : %s ", typ, err)
+	}
+}
