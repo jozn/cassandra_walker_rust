@@ -22,8 +22,9 @@ func build(gen *GenOut) {
 	}
 
 	if true {
-		e1 := exec.Command("gofmt", "-w", args.Dir).Run()
-		e2 := exec.Command("goimports", "-w", args.Dir).Run()
+		dirOut := path.Join(args.Dir, args.Package)
+		e1 := exec.Command("gofmt", "-w", dirOut).Run()
+		e2 := exec.Command("goimports", "-w", dirOut).Run()
 		errLog("gofmt", e1)
 		errLog("goimports", e2)
 	}
@@ -31,10 +32,12 @@ func build(gen *GenOut) {
 
 func writeOutput(fileName, output string) {
 	dirOut := path.Join(args.Dir, args.Package)
-	os.MkdirAll(dirOut, os.ModeDir)
+	err := os.MkdirAll(dirOut, os.ModePerm)
+	NoErr(err)
 	file := path.Join(dirOut, fileName)
 
-	ioutil.WriteFile(file, []byte(output), os.ModeType)
+	err = ioutil.WriteFile(file, []byte(output), os.ModePerm)
+	NoErr(err)
 }
 
 func buildFromTemplate(tplName string, gen interface{}) string {

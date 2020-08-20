@@ -10,7 +10,7 @@ const (
 	DEFAULT_CLUSTER_ADDRESS = "127.0.0.1"
 	DEFAULT_PORT            = 9042
 	DEFAULT_GO_PACKAGE_NAEM = "xc"
-	DEFAULT_OUTPUT          = "./"
+	DEFAULT_OUTPUT          = "./out"
 )
 
 func main() {
