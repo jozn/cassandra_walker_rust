@@ -4,6 +4,7 @@ If go-bindata is not installed, install it via 'go get -u github.com/jteeuwen/go
 
 echo "======== Srart ========"
 echo "pwd: $(pwd)"
-go-bindata -prefix "./templates"  -o "./bindata.go" -pkg "main" "./templates"
+#go-bindata -prefix "./templates"  -o "./bindata.go" -pkg "main" "./templates"
+go-bindata "./templates"
 
 echo "======== End ========"
