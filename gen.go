@@ -8,8 +8,6 @@ import (
 	"os/exec"
 	"path"
 	"text/template"
-
-	bind "github.com/jozn/cassandra-walker/template_bind"
 )
 
 func build(gen *GenOut) {
@@ -44,7 +42,7 @@ func buildFromTemplate(tplName string, gen interface{}) string {
 	tpl := template.New("" + tplName)
 	tpl.Funcs(NewTemplateFuncs())
 
-	tplGoInterface, err := bind.Asset(tplName)
+	tplGoInterface, err := Asset(tplName) // Asset form bind_template
 	NoErr(err)
 	tpl, err = tpl.Parse(string(tplGoInterface))
 	NoErr(err)
