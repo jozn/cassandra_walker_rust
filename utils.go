@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/protoc-gen-go/generator"
 	"github.com/kr/pretty"
 	"log"
 	"strings"
@@ -49,6 +50,10 @@ func cqlTypesToGoType(sqlType string) (typ, org, def string) {
 		def = `""`
 	}
 	return
+}
+
+func CamelCase(s string) string {
+	return generator.CamelCase(s)
 }
 
 func PertyPrint(a interface{}) {
