@@ -1,8 +1,7 @@
 todos:
 
-- remove the need for bindata
 - investigae gen outs in go / play / tpl
 - in rust connent and play with cassandra
-- build template for basic CRUD
+- build template for basic CRUD in rust 
 - after solidifing build ORM (query builder)
 
