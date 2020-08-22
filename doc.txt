@@ -1,0 +1,9 @@
+todos:
+
+- snaker to local codebase
+- remove the need for bindata
+- investigae gen outs in go / play / tpl
+- in rust connent and play with cassandra
+- build template for basic CRUD
+- after solidifing build ORM (query builder)
+
