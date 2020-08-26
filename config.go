@@ -1,7 +1,7 @@
 package main
 
 type ConfigArgs struct {
-	Keyspaces []string `arg:"positional,-k,help:cassandra keyspaces to build "`
+	Keyspaces []string `arg:"positional,-k,help:cassandra keyspaces to buildGo "`
 	Host      string   `arg:"-c,help:cassandra cluster address (default 127.0.0.1)"`
 	Port      int      `arg:"-p,help:cassandra port (default 9042)"`
 	Verbose   bool     `arg:"-v,help:verbosity Log"`

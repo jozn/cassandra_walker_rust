@@ -34,6 +34,8 @@ type TableOut struct {
 	OutColParams     string
 	PrefixHidden     string  //hide ex: Table_Selector in docs
 	GenOut           *GenOut //we need this for package refrencing, could be done better, but good
+
+	TableNameRust     string
 }
 
 type Column struct {
@@ -54,6 +56,11 @@ type ColumnOut struct {
 	TypeGoOriginal string
 	TypeDefaultGo  string
 	WhereModifiers []WhereModifier
+
+	ColumnNameRust   string
+	TypeRust         string
+	TypeRustOriginal string // remove?
+	TypeDefaultRust  string
 }
 
 type WhereModifier struct {
@@ -81,6 +88,8 @@ func setTableParams(gen *GenOut) {
 			TableNameGo:    generator.CamelCase(table.TableName),
 			PrefixHidden:   "",
 			GenOut:         gen,
+			// Rust
+			TableNameRust: CamelCase(table.TableName),
 		}
 		if args.Minimize {
 			t.PrefixHidden = "__"
@@ -88,12 +97,18 @@ func setTableParams(gen *GenOut) {
 		var outColParams = ""
 		for _, col := range table.Columns {
 			typGo, typOrg, defGo := cqlTypesToGoType(col.TypeCql)
+			typRs, typOrgRs, defRs := cqlTypesToRustType(col.TypeCql)
 			c := &ColumnOut{
 				Column:         *col,
 				ColumnNameGO:   generator.CamelCase(col.ColumnName),
 				TypeGo:         typGo,
 				TypeGoOriginal: typOrg,
 				TypeDefaultGo:  defGo,
+				// Rust
+				ColumnNameRust: col.ColumnName,
+				TypeRust: typRs,
+				TypeRustOriginal: typOrgRs,
+				TypeDefaultRust: defRs,
 			}
 			c.OutNameShorted = fmt.Sprintf(" %s.%s", t.TableShortName, c.ColumnNameGO)
 			t.Columns = append(t.Columns, c)

@@ -10,7 +10,23 @@ import (
 	"text/template"
 )
 
-func build(gen *GenOut) {
+func buildRust(gen *GenOut) {
+	writeOutput("xc_models.rs", buildFromTemplate("models_types.rs", gen))
+	//writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
+
+	for _, t := range gen.Tables {
+		fileName := fmt.Sprintf("%s.go", t.TableName)
+		writeOutput(fileName, buildFromTemplate("model.tgo", t))
+	}
+
+	if true {
+		dirOut := path.Join(args.Dir, args.Package)
+		e1 := exec.Command("cargo fmt", dirOut).Run()
+		errLog("gofmt", e1)
+	}
+}
+
+func buildGo(gen *GenOut) {
 	writeOutput("xc_models.go", buildFromTemplate("models_types.tgo", gen))
 	writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
 
@@ -42,7 +58,7 @@ func buildFromTemplate(tplName string, gen interface{}) string {
 	tpl := template.New("" + tplName)
 	tpl.Funcs(NewTemplateFuncs())
 
-	tplGoInterface, err := Asset(tplName) // Asset form bind_template
+	tplGoInterface, err := Asset("templates/" + tplName) // Asset form bind_template
 	NoErr(err)
 	tpl, err = tpl.Parse(string(tplGoInterface))
 	NoErr(err)

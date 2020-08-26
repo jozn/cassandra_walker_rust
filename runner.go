@@ -35,5 +35,6 @@ func Runner(arg *ConfigArgs) {
 	fmt.Println("==========================")
 	PertyPrint(gen)
 
-	build(gen)
+	//buildGo(gen)
+	buildRust(gen)
 }
