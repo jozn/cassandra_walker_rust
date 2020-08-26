@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sort"
 
 	"github.com/gocql/gocql"
 )
@@ -56,6 +57,7 @@ func loadColumns(tables []*Table, cluster *gocql.ClusterConfig) {
 			t := &Column{
 				ColumnName: (m["column_name"]).(string),
 				TypeCql:    (m["type"]).(string),
+				Position:   (m["position"]).(int),
 			}
 			if k, ok := (m["kind"]).(string); ok {
 				t.Kind = k
@@ -71,6 +73,8 @@ func loadColumns(tables []*Table, cluster *gocql.ClusterConfig) {
 			table.Columns = append(table.Columns, t)
 			m = make(map[string]interface{})
 		}
+		sorter := ColumnsSortable(table.Columns)
+		sort.Stable(sorter)
 
 		/*for _, col := range table.Columns {
 			if col.IsPartition {

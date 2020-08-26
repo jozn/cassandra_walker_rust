@@ -19,7 +19,7 @@ struct RowStruct {
 #[derive(Clone, Debug, IntoCDRSValue, TryFromRow, PartialEq)]
 struct {{ .TableNameGo }} {
 	{{range .Columns -}}
-	pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  
+	pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  {{ .Position }}
 	{{end}}
 	_exists: bool,
 	_deleted: bool,

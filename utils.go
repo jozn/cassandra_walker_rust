@@ -59,7 +59,7 @@ func cqlTypesToGoType(sqlType string) (typ, org, def string) {
 // https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cql_data_types_c.html
 func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 	switch strings.ToLower(sqlType) {
-	case "string","text", "varchar", "asci", "inet":
+	case "string", "text", "varchar", "asci", "inet":
 		typ = "String"
 		org = "String"
 		def = `"".to_string()`

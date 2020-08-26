@@ -35,13 +35,13 @@ type TableOut struct {
 	PrefixHidden     string  //hide ex: Table_Selector in docs
 	GenOut           *GenOut //we need this for package refrencing, could be done better, but good
 
-	TableNameRust     string
+	TableNameRust string
 }
 
 type Column struct {
 	ColumnName   string
 	Kind         string
-	Order        int
+	Position     int
 	TypeCql      string
 	IsPartition  bool
 	IsClustering bool
@@ -105,10 +105,10 @@ func setTableParams(gen *GenOut) {
 				TypeGoOriginal: typOrg,
 				TypeDefaultGo:  defGo,
 				// Rust
-				ColumnNameRust: col.ColumnName,
-				TypeRust: typRs,
+				ColumnNameRust:   col.ColumnName,
+				TypeRust:         typRs,
 				TypeRustOriginal: typOrgRs,
-				TypeDefaultRust: defRs,
+				TypeDefaultRust:  defRs,
 			}
 			c.OutNameShorted = fmt.Sprintf(" %s.%s", t.TableShortName, c.ColumnNameGO)
 			t.Columns = append(t.Columns, c)
@@ -233,4 +233,19 @@ func (table *TableOut) ColumnNamesParams() string {
 		arr = append(arr, t.ColumnName)
 	}
 	return strings.Join(arr, ",")
+}
+
+// For sorting
+
+type ColumnsSortable []*Column
+
+func (a ColumnsSortable) Len() int           { return len(a) }
+func (a ColumnsSortable) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ColumnsSortable) Less2(i, j int) bool { return a[i].Position > a[j].Position }
+func (a ColumnsSortable) Less(i, j int) bool {
+	if a[i].Position == a[j].Position {
+		return a[i].ColumnName < a[j].ColumnName
+	} else {
+		return a[i].Position > a[j].Position
+	}
 }
