@@ -11,12 +11,16 @@ import (
 )
 
 func buildRust(gen *GenOut) {
+	//buildGo(gen) // temp
+
 	writeOutput("xc_models.rs", buildFromTemplate("models_types.rs", gen))
+	writeOutput("common.rs", buildFromTemplate("common.rs", gen))
+
 	//writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
 
 	for _, t := range gen.Tables {
-		fileName := fmt.Sprintf("%s.go", t.TableName)
-		writeOutput(fileName, buildFromTemplate("model.tgo", t))
+		fileName := fmt.Sprintf("%s.rs", t.TableName)
+		writeOutput(fileName, buildFromTemplate("model.rs", t))
 	}
 
 	if true {
@@ -46,6 +50,7 @@ func buildGo(gen *GenOut) {
 
 func writeOutput(fileName, output string) {
 	dirOut := path.Join(args.Dir, args.Package)
+	fmt.Println(dirOut)
 	err := os.MkdirAll(dirOut, os.ModePerm)
 	NoErr(err)
 	file := path.Join(dirOut, fileName)

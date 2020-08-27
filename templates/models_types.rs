@@ -6,17 +6,17 @@ use cdrs::types::prelude::*;
 
 
 
-#[derive(Clone, Debug, IntoCDRSValue, TryFromRow, PartialEq)]
+/*#[derive(Clone, Debug, PartialEq)]
 struct RowStruct {
     key: i32,
     user: User,
     map: HashMap<String, User>,
     list: Vec<User>,
 }
-
+*/
 {{range .Tables -}}
 
-#[derive(Clone, Debug, IntoCDRSValue, TryFromRow, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 struct {{ .TableNameGo }} {
 	{{range .Columns -}}
 	pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  {{ .Position }}

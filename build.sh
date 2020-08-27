@@ -6,3 +6,7 @@ echo "======== Building Go Binary ========"
 #echo "pwd: $(pwd)"
 go build
 echo "======== End of Building Go Binary ========"
+
+
+# temp
+./cassandra_walker  twitter -d "/home/hamid/life/_active/backbone/src/"
