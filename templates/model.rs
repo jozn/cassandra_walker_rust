@@ -137,6 +137,31 @@ impl {{ $deleterType}} {
 {{$table := . }}
 
 
+{{ range (ms_to_slice $deleterType ) }}
+	{{ $operationType := . }}
+	{{ range $table.Columns }}
+		{{ $col := . }}
+		{{ with .GetModifiers }}
+			{{ range . }}
+				//{{.}}
+				{{ if (or (eq $col.TypeGo "int" ) (eq $col.TypeGo "string" ) ) }}
+					func (d *{{ $operationType }}) {{ .FuncName }} (val {{$col.TypeGo}}) *{{$operationType}} {
+					    w := whereClause{}
+					    var insWhere []interface{}
+					    insWhere = append(insWhere,val)
+					    w.args = insWhere
+					    w.condition = "{{.AndOr}} {{ $col.ColumnName }} {{.Condition}} ? "
+					    d.wheres = append(d.wheres, w)
+
+						return d
+					}
+				{{end}}
+			{{end}}
+		{{end }}
+	{{ end }}
+{{ end }}
+
+
 
 {{ range (ms_to_slice $deleterType $updaterType $selectorType) }}
 {{ $operationType := . }}

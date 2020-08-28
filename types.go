@@ -61,6 +61,7 @@ type ColumnOut struct {
 	TypeRust         string
 	TypeRustOriginal string // remove?
 	TypeDefaultRust  string
+	WhereModifiersRust []WhereModifier
 }
 
 type WhereModifier struct {
@@ -121,7 +122,8 @@ func setTableParams(gen *GenOut) {
 			}
 
 			outColParams += c.OutNameShorted + "," //fmt.Sprintf(" %s.%s,", t.TableShortName, c.ColumnNameGO)
-			c.WhereModifiers = c.GetModifiers()
+			c.WhereModifiers = c.GetModifiersGo()
+			c.WhereModifiersRust = c.GetModifiersRust()
 		}
 
 		t.OutColParams = outColParams[:len(outColParams)-1]
@@ -129,7 +131,66 @@ func setTableParams(gen *GenOut) {
 	}
 }
 
-func (c *ColumnOut) GetModifiers() (res []WhereModifier) {
+func (c *ColumnOut) GetModifiersRust() (res []WhereModifier) {
+	add := func(m WhereModifier) {
+		if len(m.AndOr) > 0 {
+			m.FuncName = m.Prefix + "_" + c.ColumnNameRust + m.Suffix
+		} else {
+			m.FuncName = c.ColumnNameRust + m.Suffix
+		}
+		res = append(res, m)
+	}
+	eqAdd := func(filter, andOr string) {
+		//sufix := filter + andOr
+		add(WhereModifier{"_eq" + filter, strings.ToLower(andOr), "=", andOr, ""})
+	}
+
+	notEqs := func(filter, andOr string) {
+		sufix := filter
+		pre := strings.ToLower(andOr)
+		add(WhereModifier{"_lt" + sufix, pre, "<", andOr, ""})
+		add(WhereModifier{"_le" + sufix, pre, "<=", andOr, ""})
+		add(WhereModifier{"_gt" + sufix, pre, ">", andOr, ""})
+		add(WhereModifier{"_ge" + sufix, pre, ">=", andOr, ""})
+	}
+	const filter = "_filtering"
+	for _, andOr := range []string{"", "AND", "OR"} {
+		// todo
+		if c.TypeRust == "i32" || c.TypeRust == "i64" ||
+				c.TypeRust == "f32"|| c.TypeRust == "f64" {
+
+			filter := "_filtering"
+			if c.IsPartition {
+				eqAdd("", andOr)
+				notEqs(filter, andOr)
+			}
+			if c.IsClustering {
+				eqAdd("", andOr)
+				notEqs("", andOr)
+			}
+			if c.IsRegular {
+				eqAdd(filter, andOr)
+				notEqs(filter, andOr)
+			}
+		}
+
+		if c.TypeRust == "String" {
+			if c.IsPartition {
+				eqAdd("", andOr)
+			}
+			if c.IsClustering {
+				eqAdd("", andOr)
+			}
+			if c.IsRegular {
+				eqAdd(filter, andOr)
+			}
+		}
+	}
+
+	return
+}
+
+func (c *ColumnOut) GetModifiersGo() (res []WhereModifier) {
 	add := func(m WhereModifier) {
 		if len(m.AndOr) > 0 {
 			m.FuncName = m.AndOr + "_" + c.ColumnNameGO + m.Suffix
@@ -184,6 +245,7 @@ func (c *ColumnOut) GetModifiers() (res []WhereModifier) {
 	return
 }
 
+// todo; where is used? a replace for template
 func (c *ColumnOut) GetModifiersIns() (res []WhereModifierIns) {
 	add := func(m WhereModifierIns) {
 		if len(m.AndOr) > 0 {
