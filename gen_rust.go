@@ -37,7 +37,7 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 	const FN = `
     pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&mut Self {
         let w = WhereClause{
-            condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?",
+            condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?".to_string(),
             args: val.into(),
         };
         self.wheres.push(w);
@@ -78,7 +78,56 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 	return strings.Join(fnsOut, "")
 }
 
+func (table *TableOut) GetRustWhereInsTmplOut() string {
+	const FN = `
+    pub fn {{ .Mod.FuncName }} (&mut self, val: Vec<{{ .Col.TypeRustBorrow }}> ) ->&mut Self {
+		let len = val.len();
+        if len == 0 {
+            return self
+        }
 
+        let mut marks = "?,".repeat(len);
+        marks.remove(marks.len()-1);
+        let w = WhereClause{
+			condition: format!("{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} IN ({})", marks),
+            args: val.into(),
+        };
+        self.wheres.push(w);
+        self
+    }
+`
+	fnsOut := []string{}
+
+	// parse template
+	tpl := template.New("fns" )
+	tpl, err := tpl.Parse(FN)
+	NoErr(err)
+
+	for i:=0; i< len(table.Columns); i++ {
+		col := table.Columns[i]
+
+		for j := 0; j < len(col.WhereInsModifiersRust); j++ {
+			wmr := col.WhereInsModifiersRust[j]
+
+			parm := struct {
+				Table *TableOut
+				Mod WhereModifierIns
+				Col *ColumnOut
+			}{
+				table, wmr, col,
+			}
+
+			buffer := bytes.NewBufferString("")
+			err = tpl.Execute(buffer, parm)
+
+			fnStr := buffer.String()
+			fmt.Println(fnStr)
+			fnsOut = append(fnsOut,fnStr )
+		}
+	}
+
+	return strings.Join(fnsOut, "")
+}
 
 ////////////////// Shared with Go generator /////////////
 func writeOutput(fileName, output string) {

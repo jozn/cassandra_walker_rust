@@ -62,6 +62,7 @@ type ColumnOut struct {
 	TypeRustBorrow     string // remove? or something for owenership
 	TypeDefaultRust    string
 	WhereModifiersRust []WhereModifier
+	WhereInsModifiersRust []WhereModifierIns
 }
 
 type WhereModifier struct {
@@ -124,6 +125,7 @@ func setTableParams(gen *GenOut) {
 			outColParams += c.OutNameShorted + "," //fmt.Sprintf(" %s.%s,", t.TableShortName, c.ColumnNameGO)
 			c.WhereModifiers = c.GetModifiers()
 			c.WhereModifiersRust = c.GetModifiersRust()
+			c.WhereInsModifiersRust = c.GetRustModifiersIns()
 		}
 
 		t.OutColParams = outColParams[:len(outColParams)-1]
@@ -190,6 +192,50 @@ func (c *ColumnOut) GetModifiersRust() (res []WhereModifier) {
 	return
 }
 
+func (c *ColumnOut) GetRustModifiersIns() (res []WhereModifierIns) {
+	add := func(m WhereModifierIns) {
+		if len(m.AndOr) > 0 {
+			m.FuncName = m.Prefix + "_" + c.ColumnNameRust + m.Suffix
+		} else {
+			m.FuncName = c.ColumnNameRust + m.Suffix
+		}
+		res = append(res, m)
+	}
+	inAdd := func(filter, andOr string) {
+		add(WhereModifierIns{"_in" + filter, strings.ToLower(andOr), andOr, ""})
+	}
+
+	const filter = "_filtering"
+
+	for _, andOr := range []string{"", "AND", "OR"} {
+		if c.TypeRust == "i32" || c.TypeRust == "i64" ||
+			c.TypeRust == "f32"|| c.TypeRust == "f64" {
+			if c.IsPartition {
+				inAdd("", andOr)
+			}
+			if c.IsClustering {
+				inAdd("", andOr)
+			}
+			if c.IsRegular {
+				inAdd(filter, andOr)
+			}
+		}
+		if c.TypeGo == "string" {
+			if c.IsPartition {
+				inAdd("", andOr)
+			}
+			if c.IsClustering {
+				inAdd("", andOr)
+			}
+			if c.IsRegular {
+				inAdd(filter, andOr)
+			}
+		}
+	}
+
+	return
+}
+
 // todo add suffix 'Go' + change in templates
 func (c *ColumnOut) GetModifiers() (res []WhereModifier) {
 	add := func(m WhereModifier) {
@@ -246,7 +292,7 @@ func (c *ColumnOut) GetModifiers() (res []WhereModifier) {
 	return
 }
 
-// todo; where is used? a replace for template
+// not used yet; utlizing this a better alternative to current implemention.
 func (c *ColumnOut) GetModifiersIns() (res []WhereModifierIns) {
 	add := func(m WhereModifierIns) {
 		if len(m.AndOr) > 0 {

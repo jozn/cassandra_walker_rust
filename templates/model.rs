@@ -68,12 +68,12 @@ impl {{ $deleterType}} {
     }
 
     //each column delete
-{{- range .Columns }}
+    {{- range .Columns }}
     pub fn delete_{{ .ColumnNameRust }}(&mut self) -> &mut Self {
         self.delete_cols.push("{{.ColumnName}}");
         self
     }
-{{ end }}
+    {{ end }}
 
     pub fn delete(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
         let del_col = self.delete_cols.join(", ");
@@ -81,23 +81,25 @@ impl {{ $deleterType}} {
         let  mut where_str = vec![];
         let mut where_arr = vec![];
 
-        for w in &self.wheres {
+        for w in self.wheres.clone() {
             where_str.push(w.condition);
-            where_arr.push(w.args.clone())
+            where_arr.push(w.args)
         }
 
-        let where_str = where_str.join("");
+        let where_str = where_str.join(" ");
 
         let cql_query = format!("DELETE {} FROM {{.TableSchemeOut}} WHERE {}", del_col, where_str);
         //let cql_query = "DELETE " + del_col + " FROM {{.TableSchemeOut}} WHERE " + where_str ;
 
         let query_values = QueryValues::SimpleValues(where_arr);
+        println!("{} - {:?}", &cql_query, &query_values);
 
         session.query_with_values(cql_query, query_values)
     }
 
     {{ .GetRustWheresTmplOut }}
 
+    {{ .GetRustWhereInsTmplOut }}
 }
 
 

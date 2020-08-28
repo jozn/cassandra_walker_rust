@@ -13,6 +13,7 @@ pub type CurrentSession = Session<RoundRobin<TcpConnectionPool<StaticPasswordAut
 
 #[derive(Debug, Clone)]
 pub struct WhereClause {
-    pub condition: &'static str,
+    // pub condition: &'static str,
+    pub condition: String,
     pub args: Value,
 }
