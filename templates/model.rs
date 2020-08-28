@@ -54,6 +54,45 @@ impl {{ .TableNameRust }} {
 {{- $updaterType := printf "%s%s_Updater" .PrefixHidden .TableNameRust}}
 {{- $selectorType := printf "%s%s_Selector" .PrefixHidden .TableNameRust}}
 
+#[derive(Default, Debug)]
+pub struct {{ $selectorType }} {
+    wheres: Vec<WhereClause>,
+    select_cols: Vec<&'static str>,
+    order_by: Vec<&'static str>,
+    limit: u32,
+    allow_filter: bool,
+}
+
+impl {{ $selectorType }} {
+    pub fn new() -> Self {
+        {{ $selectorType }}::default()
+    }
+
+    pub fn limit(&mut self, size: u32) -> &Self {
+        self.limit = size;
+        self
+    }
+
+    pub fn allow_filtering(&mut self, allow: bool) -> &Self {
+        self.allow_filter = allow;
+        self
+    }
+
+    //each column select
+    {{- range .Columns }}
+    pub fn select_{{ .ColumnNameRust }}(&mut self) -> &mut Self {
+        self.select_cols.push("{{.ColumnName}}");
+        self
+    }
+    {{ end }}
+
+    {{ .GetRustSelectorOrders }}
+
+    {{ .GetRustWheresTmplOut }}
+
+    {{ .GetRustWhereInsTmplOut }}
+
+}
 
 
 #[derive(Default, Debug)]

@@ -344,6 +344,17 @@ func (table *TableOut) ColumnNamesParams() string {
 	return strings.Join(arr, ",")
 }
 
+func (col *Column) IsNumber() bool {
+	nums := []string{"int", "serial", "tinyint", "smallint","bigint",
+		"decimal", "float"}
+	for i :=0 ; i < len(nums); i++ {
+		if col.TypeCql == nums[i] {
+			return true
+		}
+	}
+	return false
+}
+
 // For sorting
 
 type ColumnsSortable []*Column

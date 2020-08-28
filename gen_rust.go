@@ -34,7 +34,7 @@ func buildRust(gen *GenOut) {
 }
 
 func (table *TableOut) GetRustWheresTmplOut() string {
-	const FN = `
+	const TPL = `
     pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&mut Self {
         let w = WhereClause{
             condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?".to_string(),
@@ -49,7 +49,7 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 
 	// parse template
 	tpl := template.New("fns" )
-	tpl, err := tpl.Parse(FN)
+	tpl, err := tpl.Parse(TPL)
 	NoErr(err)
 
 	for i:=0; i< len(table.Columns); i++ {
@@ -79,7 +79,7 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 }
 
 func (table *TableOut) GetRustWhereInsTmplOut() string {
-	const FN = `
+	const TPL = `
     pub fn {{ .Mod.FuncName }} (&mut self, val: Vec<{{ .Col.TypeRustBorrow }}> ) ->&mut Self {
 		let len = val.len();
         if len == 0 {
@@ -100,7 +100,7 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 
 	// parse template
 	tpl := template.New("fns" )
-	tpl, err := tpl.Parse(FN)
+	tpl, err := tpl.Parse(TPL)
 	NoErr(err)
 
 	for i:=0; i< len(table.Columns); i++ {
@@ -129,8 +129,9 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 	return strings.Join(fnsOut, "")
 }
 
+// Updater
 func (table *TableOut) GetRustUpdaterFnsOut() string {
-	const FN = `
+	const TPL = `
     pub fn update_{{ .Col.ColumnNameRust }}(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
         self.updates.insert("{{ .Col.ColumnName }} = ?", val.into());
         self
@@ -148,7 +149,7 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 			table, col,
 		}
 
-		fnStr := rawTemplateOutput(FN, parm)
+		fnStr := rawTemplateOutput(TPL, parm)
 		fmt.Println(fnStr)
 		fnsOut = append(fnsOut,fnStr )
 	}
@@ -156,7 +157,63 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 	return strings.Join(fnsOut, "")
 }
 
-//
+// Selectors
+func (table *TableOut) GetRustSelectorOrders() string {
+	const TPL = `
+    pub fn orderby_{{ .Col.ColumnNameRust }}_asc(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+		self.order_by.push("{{ .Col.ColumnName }} ASC");
+        self
+    }
+
+	pub fn orderby_{{ .Col.ColumnNameRust }}_desc(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+		self.order_by.push("{{ .Col.ColumnName }} DESC");
+        self
+    }
+`
+	fnsOut := []string{}
+
+	for i:=0; i< len(table.Columns); i++ {
+		col := table.Columns[i]
+		if col.IsNumber() { //col.IsClustering &&
+			parm := struct {
+				Table *TableOut
+				Col *ColumnOut
+			}{
+				table, col,
+			}
+
+			fnStr := rawTemplateOutput(TPL, parm)
+			fmt.Println(fnStr)
+			fnsOut = append(fnsOut,fnStr )
+		}
+	}
+
+	return strings.Join(fnsOut, "")
+}
+
+// Utils - not used
+func eachColumn(table *TableOut, tpl string) string  {
+	fnsOut := []string{}
+
+	for i:=0; i< len(table.Columns); i++ {
+		col := table.Columns[i]
+
+		parm := struct {
+			Table *TableOut
+			Col *ColumnOut
+		}{
+			Table: table,
+			Col: col,
+		}
+
+		fnStr := rawTemplateOutput(tpl, parm)
+		fmt.Println(fnStr)
+		fnsOut = append(fnsOut,fnStr )
+	}
+
+	return strings.Join(fnsOut, "")
+}
+
 
 func rawTemplateOutput(templ string, data interface{}) string {
 	tpl := template.New("fns" )
