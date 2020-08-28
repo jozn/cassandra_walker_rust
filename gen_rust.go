@@ -129,6 +129,47 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 	return strings.Join(fnsOut, "")
 }
 
+func (table *TableOut) GetRustUpdaterFnsOut() string {
+	const FN = `
+    pub fn update_{{ .Col.ColumnNameRust }}(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+        self.updates.insert("{{ .Col.ColumnName }} = ?", val.into());
+        self
+    }
+`
+	fnsOut := []string{}
+
+	for i:=0; i< len(table.Columns); i++ {
+		col := table.Columns[i]
+
+		parm := struct {
+			Table *TableOut
+			Col *ColumnOut
+		}{
+			table, col,
+		}
+
+		fnStr := rawTemplateOutput(FN, parm)
+		fmt.Println(fnStr)
+		fnsOut = append(fnsOut,fnStr )
+	}
+
+	return strings.Join(fnsOut, "")
+}
+
+//
+
+func rawTemplateOutput(templ string, data interface{}) string {
+	tpl := template.New("fns" )
+	tpl, err := tpl.Parse(templ)
+	NoErr(err)
+
+	buffer := bytes.NewBufferString("")
+	err = tpl.Execute(buffer, data)
+
+	outPut := buffer.String()
+	return outPut
+}
+
 ////////////////// Shared with Go generator /////////////
 func writeOutput(fileName, output string) {
 	dirOut := path.Join(args.Dir, args.Package)

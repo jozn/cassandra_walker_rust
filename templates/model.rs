@@ -8,6 +8,7 @@ use cdrs::frame::Frame;
 use cdrs::frame::IntoBytes;
 use cdrs::types::from_cdrs::FromCDRSByName;
 use cdrs::types::prelude::*;
+use std::collections::HashMap;
 
 use crate::xc::common::*;
 
@@ -61,6 +62,60 @@ pub struct {{ $deleterType}} {
     delete_cols: Vec<&'static str>,
 }
 
+#[derive(Default, Debug)]
+pub struct {{ $updaterType}} {
+    wheres: Vec<WhereClause>,
+    updates: HashMap<&'static str, Value>,
+}
+
+impl {{ $updaterType}} {
+    pub fn new() -> Self {
+        {{ $updaterType}}::default()
+    }
+
+    pub fn update(&mut self,session: &CurrentSession) -> cdrs::error::Result<Frame>  {
+        if self.updates.is_empty() {
+            return Err(cdrs::error::Error::General("empty".to_string()));
+        }
+
+        // Update columns building
+        let mut all_vals = vec![];
+        let mut col_updates = vec![];
+
+        for (col,val) in self.updates.clone() {
+            all_vals.push(val);
+            col_updates.push(col);
+        }
+        let cql_update = col_updates.join(",");
+
+        // Where columns building
+        let  mut where_str = vec![];
+
+        for w in self.wheres.clone() {
+            where_str.push(w.condition);
+            all_vals.push(w.args)
+        }
+        let cql_where = where_str.join(" ");
+
+        // Build final query
+        let mut cql_query = if self.wheres.is_empty() {
+            format!("UPDATE {{.TableSchemeOut}} SET {}", cql_update)
+        } else {
+            format!("UPDATE {{.TableSchemeOut}} SET {} WHERE {}", cql_update, cql_where)
+        };
+
+        let query_values = QueryValues::SimpleValues(all_vals);
+        println!("{} - {:?}", &cql_query, &query_values);
+
+        session.query_with_values(cql_query, query_values)
+    }
+
+    {{ .GetRustUpdaterFnsOut }}
+
+    {{ .GetRustWheresTmplOut }}
+
+    {{ .GetRustWhereInsTmplOut }}
+}
 
 impl {{ $deleterType}} {
     pub fn new() -> Self {
