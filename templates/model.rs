@@ -69,7 +69,7 @@ impl {{ $deleterType}} {
 
     //each column delete
 {{- range .Columns }}
-    pub fn delete_{{ .ColumnNameRust }}(&mut self) -> &Self {
+    pub fn delete_{{ .ColumnNameRust }}(&mut self) -> &mut Self {
         self.delete_cols.push("{{.ColumnName}}");
         self
     }

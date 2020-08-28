@@ -35,7 +35,7 @@ func buildRust(gen *GenOut) {
 
 func (table *TableOut) GetRustWheresTmplOut() string {
 	const FN = `
-    pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&Self {
+    pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&mut Self {
         let w = WhereClause{
             condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?",
             args: val.into(),
@@ -45,16 +45,6 @@ func (table *TableOut) GetRustWheresTmplOut() string {
     }
 `
 
-	const FN2 = `
-    pub fn {{.Mod.FuncName}}(&mut self, val: &str) ->&Self {
-        let w = WhereClause{
-            condition: "OR tweet_id >= ?",
-            args: val.into(),
-        };
-        self.wheres.push(w);
-        self
-    }
-`
 	fnsOut := []string{}
 
 	// parse template
@@ -82,7 +72,6 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 			fnStr := buffer.String()
 			fmt.Println(fnStr)
 			fnsOut = append(fnsOut,fnStr )
-
 		}
 	}
 
