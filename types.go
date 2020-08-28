@@ -57,10 +57,10 @@ type ColumnOut struct {
 	TypeDefaultGo  string
 	WhereModifiers []WhereModifier
 
-	ColumnNameRust   string
-	TypeRust         string
-	TypeRustOriginal string // remove?
-	TypeDefaultRust  string
+	ColumnNameRust     string
+	TypeRust           string
+	TypeRustBorrow     string // remove? or something for owenership
+	TypeDefaultRust    string
 	WhereModifiersRust []WhereModifier
 }
 
@@ -106,10 +106,10 @@ func setTableParams(gen *GenOut) {
 				TypeGoOriginal: typOrg,
 				TypeDefaultGo:  defGo,
 				// Rust
-				ColumnNameRust:   col.ColumnName,
-				TypeRust:         typRs,
-				TypeRustOriginal: typOrgRs,
-				TypeDefaultRust:  defRs,
+				ColumnNameRust:  col.ColumnName,
+				TypeRust:        typRs,
+				TypeRustBorrow:  typOrgRs,
+				TypeDefaultRust: defRs,
 			}
 			c.OutNameShorted = fmt.Sprintf(" %s.%s", t.TableShortName, c.ColumnNameGO)
 			t.Columns = append(t.Columns, c)
@@ -122,7 +122,7 @@ func setTableParams(gen *GenOut) {
 			}
 
 			outColParams += c.OutNameShorted + "," //fmt.Sprintf(" %s.%s,", t.TableShortName, c.ColumnNameGO)
-			c.WhereModifiers = c.GetModifiersGo()
+			c.WhereModifiers = c.GetModifiers()
 			c.WhereModifiersRust = c.GetModifiersRust()
 		}
 
@@ -190,7 +190,8 @@ func (c *ColumnOut) GetModifiersRust() (res []WhereModifier) {
 	return
 }
 
-func (c *ColumnOut) GetModifiersGo() (res []WhereModifier) {
+// todo add suffix 'Go' + change in templates
+func (c *ColumnOut) GetModifiers() (res []WhereModifier) {
 	add := func(m WhereModifier) {
 		if len(m.AndOr) > 0 {
 			m.FuncName = m.AndOr + "_" + c.ColumnNameGO + m.Suffix

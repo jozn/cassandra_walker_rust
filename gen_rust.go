@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"text/template"
 )
 
@@ -21,6 +22,8 @@ func buildRust(gen *GenOut) {
 	for _, t := range gen.Tables {
 		fileName := fmt.Sprintf("%s.rs", t.TableName)
 		writeOutput(fileName, buildFromTemplate("model.rs", t))
+
+		t.GetRustWheresTmplOut()
 	}
 
 	if true {
@@ -30,24 +33,65 @@ func buildRust(gen *GenOut) {
 	}
 }
 
-func buildGo(gen *GenOut) {
-	writeOutput("xc_models.go", buildFromTemplate("models_types.tgo", gen))
-	writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
+func (table *TableOut) GetRustWheresTmplOut() string {
+	const FN = `
+    pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&Self {
+        let w = WhereClause{
+            condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?",
+            args: val.into(),
+        };
+        self.wheres.push(w);
+        self
+    }
+`
 
-	for _, t := range gen.Tables {
-		fileName := fmt.Sprintf("%s.go", t.TableName)
-		writeOutput(fileName, buildFromTemplate("model.tgo", t))
+	const FN2 = `
+    pub fn {{.Mod.FuncName}}(&mut self, val: &str) ->&Self {
+        let w = WhereClause{
+            condition: "OR tweet_id >= ?",
+            args: val.into(),
+        };
+        self.wheres.push(w);
+        self
+    }
+`
+	fnsOut := []string{}
+
+	// parse template
+	tpl := template.New("fns" )
+	tpl, err := tpl.Parse(FN)
+	NoErr(err)
+
+	for i:=0; i< len(table.Columns); i++ {
+		col := table.Columns[i]
+
+		for j := 0; j < len(col.WhereModifiersRust); j++ {
+			wmr := col.WhereModifiersRust[j]
+
+			parm := struct {
+				Table *TableOut
+				Mod WhereModifier
+				Col *ColumnOut
+			}{
+				table, wmr, col,
+			}
+
+			buffer := bytes.NewBufferString("")
+			err = tpl.Execute(buffer, parm)
+
+			fnStr := buffer.String()
+			fmt.Println(fnStr)
+			fnsOut = append(fnsOut,fnStr )
+
+		}
 	}
 
-	if true {
-		dirOut := path.Join(args.Dir, args.Package)
-		e1 := exec.Command("gofmt", "-w", dirOut).Run()
-		e2 := exec.Command("goimports", "-w", dirOut).Run()
-		errLog("gofmt", e1)
-		errLog("goimports", e2)
-	}
+	return strings.Join(fnsOut, "")
 }
 
+
+
+////////////////// Shared with Go generator /////////////
 func writeOutput(fileName, output string) {
 	dirOut := path.Join(args.Dir, args.Package)
 	fmt.Println(dirOut)

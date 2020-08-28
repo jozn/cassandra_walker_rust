@@ -11,7 +11,7 @@ use cdrs::types::prelude::*;
 
 pub type CurrentSession = Session<RoundRobin<TcpConnectionPool<StaticPasswordAuthenticator>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhereClause {
     pub condition: &'static str,
     pub args: Value,

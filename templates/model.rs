@@ -75,139 +75,31 @@ impl {{ $deleterType}} {
     }
 {{ end }}
 
-    pub fn tweet_id_eq(&mut self, val: &str) ->&Self {
-        let w = WhereClause{
-            condition: "tweet_id =?",
-            args: val.into(),
-        };
-        self.wheres.push(w);
-        self
-    }
-
-    pub fn and_tweet_id_eq(&mut self, val: &str) ->&Self {
-        let w = WhereClause{
-            condition: "AND tweet_id =?",
-            args: val.into(),
-        };
-        self.wheres.push(w);
-        self
-    }
-
-    pub fn or_tweet_id_eq(&mut self, val: &str) ->&Self {
-        let w = WhereClause{
-            condition: "OR tweet_id =?",
-            args: val.into(),
-        };
-        self.wheres.push(w);
-        self
-    }
-
-    pub fn or_tweet_id_ge(&mut self, val: &str) ->&Self {
-        let w = WhereClause{
-            condition: "OR tweet_id >= ?",
-            args: val.into(),
-        };
-        self.wheres.push(w);
-        self
-    }
-
     pub fn delete(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
         let del_col = self.delete_cols.join(", ");
 
         let  mut where_str = vec![];
         let mut where_arr = vec![];
 
-        for w in self.wheres {
+        for w in &self.wheres {
             where_str.push(w.condition);
-            where_arr.push(w.args)
+            where_arr.push(w.args.clone())
         }
 
         let where_str = where_str.join("");
 
-        let cql_query = "DELETE " + del_col + " FROM {{.TableSchemeOut}} WHERE " + where_str ;
+        let cql_query = format!("DELETE {} FROM {{.TableSchemeOut}} WHERE {}", del_col, where_str);
+        //let cql_query = "DELETE " + del_col + " FROM {{.TableSchemeOut}} WHERE " + where_str ;
 
         let query_values = QueryValues::SimpleValues(where_arr);
 
         session.query_with_values(cql_query, query_values)
     }
 
+    {{ .GetRustWheresTmplOut }}
+
 }
 
 
 {{$table := . }}
 
-
-{{ range (ms_to_slice $deleterType ) }}
-	{{ $operationType := . }}
-	{{ range $table.Columns }}
-		{{ $col := . }}
-		{{ with .GetModifiers }}
-			{{ range . }}
-				//{{.}}
-				{{ if (or (eq $col.TypeGo "int" ) (eq $col.TypeGo "string" ) ) }}
-					func (d *{{ $operationType }}) {{ .FuncName }} (val {{$col.TypeGo}}) *{{$operationType}} {
-					    w := whereClause{}
-					    var insWhere []interface{}
-					    insWhere = append(insWhere,val)
-					    w.args = insWhere
-					    w.condition = "{{.AndOr}} {{ $col.ColumnName }} {{.Condition}} ? "
-					    d.wheres = append(d.wheres, w)
-
-						return d
-					}
-				{{end}}
-			{{end}}
-		{{end }}
-	{{ end }}
-{{ end }}
-
-
-
-{{ range (ms_to_slice $deleterType $updaterType $selectorType) }}
-{{ $operationType := . }}
-
-impl {{ $operationType }} {
-{{ range $table.Columns }}
-    {{ $col := . }}
-    {{ with .GetModifiersIns }}
-        {{ range . }}
-        {{/* println . */}}
-        {{end}}
-    {{end}}
-{{end}}
-}
-
-
-{{ end }}
-
-/*
-
-///////////////////////////////////////// ins for all //////////////////
-// probely not used as we can do it with vector i think
-{{ range (ms_to_slice $deleterType $updaterType $selectorType) }}
-	{{ $operationType := . }}
-	{{ range $table.Columns }}
-		{{ $col := . }}
-		{{ with .GetModifiersIns }}
-			{{ range . }}
-				{{/* . */}}
-				{{ if (or (eq $col.TypeGo "int" ) (eq $col.TypeGo "string" ) ) }}
-					func (d *{{ $operationType }}) {{ .FuncName }} (val ...{{$col.TypeGo}}) *{{$operationType}} {
-					    w := whereClause{}
-					    var insWhere []interface{}
-					    for _, v := range val{
-        					insWhere = append(insWhere, v)
-    					}
-					    w.args = insWhere
-					    w.condition = "{{.AndOr}} {{ $col.ColumnName }} IN (" + dbQuestionForSqlIn(len(val)) + ") "
-					    d.wheres = append(d.wheres, w)
-
-						return d
-					}
-				{{end}}
-			{{end}}
-		{{end }}
-	{{ end }}
-{{ end }}
-
-*/

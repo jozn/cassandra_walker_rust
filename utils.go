@@ -61,7 +61,7 @@ func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 	switch strings.ToLower(sqlType) {
 	case "string", "text", "varchar", "asci", "inet":
 		typ = "String"
-		org = "String"
+		org = "&str"
 		def = `"".to_string()`
 	case "bool":
 		typ = "bool"
@@ -81,15 +81,15 @@ func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 		def = `""`
 	case "bytes", "blob":
 		typ = "Vec<u8>"
-		org = "Vec<u8>"
+		org = "&Vec<u8>"
 		def = `vec![]`
 	case "date", "time":
 		typ = "String"
-		org = "String"
+		org = "&str"
 		def = `"".to_string()`
 	case "timestamp":
 		typ = "String"
-		org = "String"
+		org = "&str"
 		def = `"".to_string()`
 	case "double", "decimal":
 		typ = "f64"
@@ -101,7 +101,7 @@ func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 		def = `0f32`
 	case "uuid", "timeuuid":
 		typ = "String"
-		org = "String"
+		org = "&str"
 		def = `"".to_string()`
 
 	default:
