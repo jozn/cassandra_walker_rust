@@ -161,6 +161,55 @@ impl {{ $selectorType }} {
         Ok(rows)
     }
 
+    pub fn _get_rows_with_size(&mut self,session: &CurrentSession, size: i64) -> Result<Vec<{{ .TableNameRust }}>, CWError>   {
+
+        let(cql_query, query_values) = self._to_cql();
+
+        let query_result = session
+            .query_with_values(cql_query,query_values)?
+            .get_body()?
+            .into_rows();
+
+        let db_raws = match query_result {
+            Some(rs) => {
+                if size > 0 {
+                    let len = (size as usize).min(rs.len());
+                    rs[0..len].to_vec()
+                } else {
+                    rs
+                }
+            },
+            None => return Err(CWError::NotFound)
+        };
+
+        let mut rows = vec![];
+
+        for db_row in db_raws {
+            let mut row = {{ .TableNameRust }}::default();
+            {{range .Columns }}
+            row.{{ .ColumnNameRust }} = db_row.by_name("{{ .ColumnName }} ")?.unwrap_or_default();
+            {{- end }}
+
+            rows.push(row);
+        }
+
+        Ok(rows)
+    }
+
+    pub fn get_rows2(&mut self, session: &CurrentSession) -> Result<Vec<Tweet>, CWError>{
+        self._get_rows_with_size(session,-1)
+    }
+
+    pub fn get_row2(&mut self, session: &CurrentSession) -> Result<Tweet, CWError>{
+        let rows = self._get_rows_with_size(session,1)?;
+
+        if rows.len() == 0 {
+            return Err(CWError::NotFound)
+        }
+
+        Ok(rows.get(0).unwrap().to_owned())
+    }
+
     {{ .GetRustSelectorOrders }}
 
     {{ .GetRustWheresTmplOut }}
