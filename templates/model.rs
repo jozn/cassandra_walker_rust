@@ -2,18 +2,21 @@ use cdrs::authenticators::StaticPasswordAuthenticator;
 use cdrs::cluster::session::{new as new_session, Session};
 use cdrs::cluster::{ClusterTcpConfig, NodeTcpConfigBuilder, TcpConnectionPool};
 use cdrs::load_balancing::RoundRobin;
-use cdrs::query::*;
+// use cdrs::query::*;
+use cdrs::query::{QueryValues,QueryExecutor};
 use cdrs::frame::Frame;
 
 use cdrs::frame::IntoBytes;
 use cdrs::types::from_cdrs::FromCDRSByName;
 use cdrs::types::prelude::*;
+use cdrs::types::ByName;
 use std::collections::HashMap;
+use std::result::Result; // override prelude Result
 
 use crate::xc::common::*;
 
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Default, Clone, Debug, PartialEq)]
 pub struct {{ .TableNameRust }} {
     {{range .Columns -}}
     pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  {{ .Position }}
@@ -54,6 +57,19 @@ impl {{ .TableNameRust }} {
 {{- $updaterType := printf "%s%s_Updater" .PrefixHidden .TableNameRust}}
 {{- $selectorType := printf "%s%s_Selector" .PrefixHidden .TableNameRust}}
 
+fn _get_where(wheres: Vec<WhereClause>) ->  (String, Vec<Value>) {
+    let mut values = vec![];
+    let  mut where_str = vec![];
+
+    for w in wheres {
+        where_str.push(w.condition);
+        values.push(w.args)
+    }
+    let cql_where = where_str.join(" ");
+
+    (cql_where, values)
+}
+
 #[derive(Default, Debug)]
 pub struct {{ $selectorType }} {
     wheres: Vec<WhereClause>,
@@ -85,6 +101,65 @@ impl {{ $selectorType }} {
         self
     }
     {{ end }}
+
+    pub fn _to_cql(&self) ->  (String, Vec<Value>)  {
+        let cql_select = if self.select_cols.is_empty() {
+            "*".to_string()
+        } else {
+            self.select_cols.join(", ")
+        };
+
+        let mut cql_query = format!("SELECT {} FROM {{.TableSchemeOut}}", cql_select);
+
+        let (cql_where, where_values) = _get_where(self.wheres.clone());
+
+        if where_values.len() > 0 {
+            cql_query.push_str(&format!(" WHERE {}",&cql_where));
+        }
+
+        if self.order_by.len() > 0 {
+            let cql_orders = self.order_by.join(", ");
+            cql_query.push_str( &format!(" ORDER BY {}", &cql_orders));
+        };
+
+        if self.limit != 0  {
+            cql_query.push_str(&format!(" LIMIT {} ", self.limit));
+        };
+
+        if self.allow_filter  {
+            cql_query.push_str(" ALLOW FILTERING");
+        };
+
+        (cql_query, where_values)
+    }
+
+    pub fn get_rows(&mut self,session: &CurrentSession) -> Result<Vec<{{ .TableNameRust }}>, CWError>   {
+
+        let(cql_query, query_values) = self._to_cql();
+
+        let query_result = session
+            .query_with_values(cql_query,query_values)?
+            .get_body()?
+            .into_rows();
+
+        let db_raws = match query_result {
+            Some(rs) => rs,
+            None => return Err(CWError::NotFound)
+        };
+
+        let mut rows = vec![];
+
+        for db_row in db_raws {
+            let mut row = {{ .TableNameRust }}::default();
+            {{range .Columns }}
+            row.{{ .ColumnNameRust }} = db_row.by_name("{{ .ColumnName }} ")?.unwrap_or_default();
+            {{- end }}
+
+            rows.push(row);
+        }
+
+        Ok(rows)
+    }
 
     {{ .GetRustSelectorOrders }}
 

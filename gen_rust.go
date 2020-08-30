@@ -35,7 +35,7 @@ func buildRust(gen *GenOut) {
 
 func (table *TableOut) GetRustWheresTmplOut() string {
 	const TPL = `
-    pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) ->&mut Self {
+    pub fn {{ .Mod.FuncName }} (&mut self, val: {{ .Col.TypeRustBorrow }} ) -> &mut Self {
         let w = WhereClause{
             condition: "{{ .Mod.AndOr }} {{ .Col.ColumnNameRust }} {{ .Mod.Condition }} ?".to_string(),
             args: val.into(),
@@ -80,7 +80,7 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 
 func (table *TableOut) GetRustWhereInsTmplOut() string {
 	const TPL = `
-    pub fn {{ .Mod.FuncName }} (&mut self, val: Vec<{{ .Col.TypeRustBorrow }}> ) ->&mut Self {
+    pub fn {{ .Mod.FuncName }} (&mut self, val: Vec<{{ .Col.TypeRustBorrow }}> ) -> &mut Self {
 		let len = val.len();
         if len == 0 {
             return self
@@ -132,7 +132,7 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 // Updater
 func (table *TableOut) GetRustUpdaterFnsOut() string {
 	const TPL = `
-    pub fn update_{{ .Col.ColumnNameRust }}(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+    pub fn update_{{ .Col.ColumnNameRust }}(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
         self.updates.insert("{{ .Col.ColumnName }} = ?", val.into());
         self
     }
@@ -160,12 +160,12 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 // Selectors
 func (table *TableOut) GetRustSelectorOrders() string {
 	const TPL = `
-    pub fn orderby_{{ .Col.ColumnNameRust }}_asc(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+    pub fn order_by_{{ .Col.ColumnNameRust }}_asc(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
 		self.order_by.push("{{ .Col.ColumnName }} ASC");
         self
     }
 
-	pub fn orderby_{{ .Col.ColumnNameRust }}_desc(&mut self, val: {{ .Col.TypeRustBorrow }}) ->&mut Self {
+	pub fn order_by_{{ .Col.ColumnNameRust }}_desc(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
 		self.order_by.push("{{ .Col.ColumnName }} DESC");
         self
     }

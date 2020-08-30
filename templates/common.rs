@@ -8,6 +8,8 @@ use cdrs::query::*;
 use cdrs::frame::IntoBytes;
 use cdrs::types::from_cdrs::FromCDRSByName;
 use cdrs::types::prelude::*;
+use cdrs::frame::frame_error::CDRSError;
+use cdrs::Error as DriverError;
 
 pub type CurrentSession = Session<RoundRobin<TcpConnectionPool<StaticPasswordAuthenticator>>>;
 
@@ -17,3 +19,21 @@ pub struct WhereClause {
     pub condition: String,
     pub args: Value,
 }
+
+pub enum CWError {
+    Server(CDRSError),
+    General,
+    Driver(DriverError),
+    InvalidCQL,
+    NotFound,
+}
+
+impl From<DriverError> for CWError {
+    fn from(err: Error) -> Self {
+        match err {
+            DriverError::Server(serr) => CWError::Server(serr),
+            _ => CWError::Driver(err)
+        }
+    }
+}
+
