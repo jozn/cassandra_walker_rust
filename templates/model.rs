@@ -51,6 +51,45 @@ impl {{ .TableNameRust }} {
         deleter.delete(session)
     }
 
+    {{ .GetRustModelSave }}
+
+    pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
+        let mut columns = vec![];
+        let mut values :Vec<Value> = vec![];
+
+	{{range .Columns }}
+        if self.{{.ColumnNameRust}} ==  {{.TypeDefaultRust}}{
+            columns.push("{{.ColumnName}}");
+            values.push(self.{{.ColumnName}}.clone().into());
+        }
+
+	{{end}}
+
+        if self.tweet_id == "" {
+            columns.push("teweet_id");
+            values.push(self.tweet_id.clone().into());
+        }
+
+        if self.user_id.eq(&0i64) {
+            columns.push("teweet_id");
+        }
+
+        if columns.len() == 0 {
+            return Err(CWError::InvalidCQL)
+        }
+
+        let cql_columns = columns.join(", ");
+        let mut cql_question = "?,".repeat(columns.len());
+        cql_question.remove(cql_question.len()-1);
+
+        let cql_query = format!("INSERT INTO {{ .TableSchemeOut }} {} VALUES {}", cql_columns, cql_question);
+
+        println!("{} - {}", &cql_query, &cql_question);
+
+        session.query_with_values(cql_query, values)?;
+
+        Ok(())
+    }
 }
 
 {{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
@@ -84,13 +123,18 @@ impl {{ $selectorType }} {
         {{ $selectorType }}::default()
     }
 
-    pub fn limit(&mut self, size: u32) -> &Self {
+    pub fn limit(&mut self, size: u32) -> &mut Self {
         self.limit = size;
         self
     }
 
-    pub fn allow_filtering(&mut self, allow: bool) -> &Self {
+    pub fn allow_filtering(&mut self, allow: bool) -> &mut Self {
         self.allow_filter = allow;
+        self
+    }
+
+    pub fn select_all(&mut self) -> &mut Self {
+        // Default is select *
         self
     }
 
@@ -136,6 +180,8 @@ impl {{ $selectorType }} {
     pub fn _get_rows_with_size(&mut self,session: &CurrentSession, size: i64) -> Result<Vec<{{ .TableNameRust }}>, CWError>   {
 
         let(cql_query, query_values) = self._to_cql();
+
+        println!("{} - {:?}", &cql_query, &query_values);
 
         let query_result = session
             .query_with_values(cql_query,query_values)?

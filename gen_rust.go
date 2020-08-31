@@ -48,11 +48,11 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 	fnsOut := []string{}
 
 	// parse template
-	tpl := template.New("fns" )
+	tpl := template.New("fns")
 	tpl, err := tpl.Parse(TPL)
 	NoErr(err)
 
-	for i:=0; i< len(table.Columns); i++ {
+	for i := 0; i < len(table.Columns); i++ {
 		col := table.Columns[i]
 
 		for j := 0; j < len(col.WhereModifiersRust); j++ {
@@ -60,8 +60,8 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 
 			parm := struct {
 				Table *TableOut
-				Mod WhereModifier
-				Col *ColumnOut
+				Mod   WhereModifier
+				Col   *ColumnOut
 			}{
 				table, wmr, col,
 			}
@@ -70,8 +70,8 @@ func (table *TableOut) GetRustWheresTmplOut() string {
 			err = tpl.Execute(buffer, parm)
 
 			fnStr := buffer.String()
-			fmt.Println(fnStr)
-			fnsOut = append(fnsOut,fnStr )
+			//fmt.Println(fnStr)
+			fnsOut = append(fnsOut, fnStr)
 		}
 	}
 
@@ -99,11 +99,11 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 	fnsOut := []string{}
 
 	// parse template
-	tpl := template.New("fns" )
+	tpl := template.New("fns")
 	tpl, err := tpl.Parse(TPL)
 	NoErr(err)
 
-	for i:=0; i< len(table.Columns); i++ {
+	for i := 0; i < len(table.Columns); i++ {
 		col := table.Columns[i]
 
 		for j := 0; j < len(col.WhereInsModifiersRust); j++ {
@@ -111,8 +111,8 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 
 			parm := struct {
 				Table *TableOut
-				Mod WhereModifierIns
-				Col *ColumnOut
+				Mod   WhereModifierIns
+				Col   *ColumnOut
 			}{
 				table, wmr, col,
 			}
@@ -121,8 +121,8 @@ func (table *TableOut) GetRustWhereInsTmplOut() string {
 			err = tpl.Execute(buffer, parm)
 
 			fnStr := buffer.String()
-			fmt.Println(fnStr)
-			fnsOut = append(fnsOut,fnStr )
+			//fmt.Println(fnStr)
+			fnsOut = append(fnsOut, fnStr)
 		}
 	}
 
@@ -139,19 +139,19 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 `
 	fnsOut := []string{}
 
-	for i:=0; i< len(table.Columns); i++ {
+	for i := 0; i < len(table.Columns); i++ {
 		col := table.Columns[i]
 
 		parm := struct {
 			Table *TableOut
-			Col *ColumnOut
+			Col   *ColumnOut
 		}{
 			table, col,
 		}
 
 		fnStr := rawTemplateOutput(TPL, parm)
-		fmt.Println(fnStr)
-		fnsOut = append(fnsOut,fnStr )
+		//fmt.Println(fnStr)
+		fnsOut = append(fnsOut, fnStr)
 	}
 
 	return strings.Join(fnsOut, "")
@@ -160,69 +160,124 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 // Selectors
 func (table *TableOut) GetRustSelectorOrders() string {
 	const TPL = `
-    pub fn order_by_{{ .Col.ColumnNameRust }}_asc(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
+    pub fn order_by_{{ .Col.ColumnNameRust }}_asc(&mut self) -> &mut Self {
 		self.order_by.push("{{ .Col.ColumnName }} ASC");
         self
     }
 
-	pub fn order_by_{{ .Col.ColumnNameRust }}_desc(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
+	pub fn order_by_{{ .Col.ColumnNameRust }}_desc(&mut self) -> &mut Self {
 		self.order_by.push("{{ .Col.ColumnName }} DESC");
         self
     }
 `
 	fnsOut := []string{}
 
-	for i:=0; i< len(table.Columns); i++ {
+	for i := 0; i < len(table.Columns); i++ {
 		col := table.Columns[i]
-		if col.IsNumber() { //col.IsClustering &&
+		if col.IsClustering { //&& col.IsNumber()
 			parm := struct {
 				Table *TableOut
-				Col *ColumnOut
+				Col   *ColumnOut
 			}{
 				table, col,
 			}
 
 			fnStr := rawTemplateOutput(TPL, parm)
-			fmt.Println(fnStr)
-			fnsOut = append(fnsOut,fnStr )
+			//fmt.Println(fnStr)
+			fnsOut = append(fnsOut, fnStr)
 		}
 	}
 
 	return strings.Join(fnsOut, "")
 }
 
-// Utils - not used
-func eachColumn(table *TableOut, tpl string) string  {
+// Models (save, delete, update)
+
+func (table *TableOut) GetRustModelSave() string {
+	const TPL_HEADER = `
+    pub fn save2(&mut self, session: &CurrentSession) -> Result<(),CWError> {
+        let mut columns = vec![];
+        let mut values :Vec<Value> = vec![];
+`
+	const TPL_FOOTER = `
+        if columns.len() == 0 {
+            return Err(CWError::InvalidCQL)
+        }
+
+        let cql_columns = columns.join(", ");
+        let mut cql_question = "?,".repeat(columns.len());
+        cql_question.remove(cql_question.len()-1);
+
+        let cql_query = format!("INSERT INTO {{ .TableSchemeOut }} {} VALUES {}", cql_columns, cql_question);
+
+        println!("{} - {}", &cql_query, &cql_question);
+
+        session.query_with_values(cql_query, values)?;
+
+        Ok(())
+    }
+`
 	fnsOut := []string{}
 
-	for i:=0; i< len(table.Columns); i++ {
+	for i := 0; i < len(table.Columns); i++ {
+		col := table.Columns[i]
+
+		T := ""
+		switch col.TypeRust {
+		case "String", "&str", "Vec<u8>":
+			T = `
+		if self.{{.ColumnNameRust}}.is_empty() {
+            columns.push("{{.ColumnName}}");
+            values.push(self.{{.ColumnName}}.clone().into());
+       }
+`
+		default:
+			T = `
+		if self.{{.ColumnNameRust}} == {{.TypeDefaultRust}} {
+            columns.push("{{.ColumnName}}");
+            values.push(self.{{.ColumnName}}.clone().into());
+       }
+`
+		}
+		fnStr := rawTemplateOutput(T, col)
+		fnsOut = append(fnsOut, fnStr)
+	}
+	middle := strings.Join(fnsOut, "")
+	out := fmt.Sprintf("%s %s %s", TPL_HEADER, middle, TPL_FOOTER)
+	return out
+}
+
+// Utils - not used
+func eachColumn(table *TableOut, tpl string) string {
+	fnsOut := []string{}
+
+	for i := 0; i < len(table.Columns); i++ {
 		col := table.Columns[i]
 
 		parm := struct {
 			Table *TableOut
-			Col *ColumnOut
+			Col   *ColumnOut
 		}{
 			Table: table,
-			Col: col,
+			Col:   col,
 		}
 
 		fnStr := rawTemplateOutput(tpl, parm)
-		fmt.Println(fnStr)
-		fnsOut = append(fnsOut,fnStr )
+		//fmt.Println(fnStr)
+		fnsOut = append(fnsOut, fnStr)
 	}
 
 	return strings.Join(fnsOut, "")
 }
 
-
 func rawTemplateOutput(templ string, data interface{}) string {
-	tpl := template.New("fns" )
+	tpl := template.New("fns")
 	tpl, err := tpl.Parse(templ)
 	NoErr(err)
 
 	buffer := bytes.NewBufferString("")
 	err = tpl.Execute(buffer, data)
-
+	NoErr(err)
 	outPut := buffer.String()
 	return outPut
 }
@@ -230,7 +285,7 @@ func rawTemplateOutput(templ string, data interface{}) string {
 ////////////////// Shared with Go generator /////////////
 func writeOutput(fileName, output string) {
 	dirOut := path.Join(args.Dir, args.Package)
-	fmt.Println(dirOut)
+	//fmt.Println(dirOut)
 	err := os.MkdirAll(dirOut, os.ModePerm)
 	NoErr(err)
 	file := path.Join(dirOut, fileName)

@@ -57,11 +57,11 @@ type ColumnOut struct {
 	TypeDefaultGo  string
 	WhereModifiers []WhereModifier
 
-	ColumnNameRust     string
-	TypeRust           string
-	TypeRustBorrow     string // remove? or something for owenership
-	TypeDefaultRust    string
-	WhereModifiersRust []WhereModifier
+	ColumnNameRust        string
+	TypeRust              string
+	TypeRustBorrow        string // remove? or something for owenership
+	TypeDefaultRust       string
+	WhereModifiersRust    []WhereModifier
 	WhereInsModifiersRust []WhereModifierIns
 }
 
@@ -159,7 +159,7 @@ func (c *ColumnOut) GetModifiersRust() (res []WhereModifier) {
 	for _, andOr := range []string{"", "AND", "OR"} {
 		// todo
 		if c.TypeRust == "i32" || c.TypeRust == "i64" ||
-				c.TypeRust == "f32"|| c.TypeRust == "f64" {
+			c.TypeRust == "f32" || c.TypeRust == "f64" {
 
 			filter := "_filtering"
 			if c.IsPartition {
@@ -209,7 +209,7 @@ func (c *ColumnOut) GetRustModifiersIns() (res []WhereModifierIns) {
 
 	for _, andOr := range []string{"", "AND", "OR"} {
 		if c.TypeRust == "i32" || c.TypeRust == "i64" ||
-			c.TypeRust == "f32"|| c.TypeRust == "f64" {
+			c.TypeRust == "f32" || c.TypeRust == "f64" {
 			if c.IsPartition {
 				inAdd("", andOr)
 			}
@@ -345,9 +345,9 @@ func (table *TableOut) ColumnNamesParams() string {
 }
 
 func (col *Column) IsNumber() bool {
-	nums := []string{"int", "serial", "tinyint", "smallint","bigint",
+	nums := []string{"int", "serial", "tinyint", "smallint", "bigint",
 		"decimal", "float"}
-	for i :=0 ; i < len(nums); i++ {
+	for i := 0; i < len(nums); i++ {
 		if col.TypeCql == nums[i] {
 			return true
 		}
@@ -359,8 +359,8 @@ func (col *Column) IsNumber() bool {
 
 type ColumnsSortable []*Column
 
-func (a ColumnsSortable) Len() int           { return len(a) }
-func (a ColumnsSortable) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ColumnsSortable) Len() int            { return len(a) }
+func (a ColumnsSortable) Swap(i, j int)       { a[i], a[j] = a[j], a[i] }
 func (a ColumnsSortable) Less2(i, j int) bool { return a[i].Position > a[j].Position }
 func (a ColumnsSortable) Less(i, j int) bool {
 	if a[i].Position == a[j].Position {

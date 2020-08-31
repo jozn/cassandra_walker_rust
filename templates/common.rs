@@ -20,6 +20,7 @@ pub struct WhereClause {
     pub args: Value,
 }
 
+#[derive(Debug)]
 pub enum CWError {
     Server(CDRSError),
     General,
