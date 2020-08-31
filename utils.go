@@ -76,7 +76,7 @@ func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 		org = "i64"
 		def = `0i64`
 	case "json":
-		typ = "string"
+		typ = "String"
 		org = "string"
 		def = `""`
 	case "bytes", "blob":

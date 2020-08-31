@@ -34,7 +34,7 @@ impl {{ .TableNameRust }} {
         self._exists
     }
 
-    pub fn delete(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
+   /* pub fn delete2(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
         let mut deleter = Tweet_Deleter::new();
         {{ range $i, $col := .PartitionColumns }}
             {{- if (eq $i 0)}}
@@ -49,7 +49,7 @@ impl {{ .TableNameRust }} {
         {{- end }}
 
         deleter.delete(session)
-    }
+    }*/
 
     pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
         let mut columns = vec![];
@@ -73,6 +73,27 @@ impl {{ .TableNameRust }} {
 
         Ok(())
     }
+
+    pub fn delete(&mut self, session: &CurrentSession) -> Result<(), CWError> {
+        let mut deleter = Tweet_Deleter::new();
+
+    {{- range $i, $col := .PartitionColumns }}
+      {{if (eq $i 0) }}
+        deleter.{{$col.ColumnNameRust}}_eq({{.RustBorrowSign}}self.{{$col.ColumnNameRust}});
+    	{{- else -}}
+        deleter.and_{{$col.ColumnNameRust}}_Eq({{.RustBorrowSign}}self.{{$col.ColumnNameRust}});
+      {{- end}}
+    {{ end -}}
+
+    {{- range .ClusterColumns }}
+        deleter.and_{{.ColumnNameRust}}_eq({{.RustBorrowSign}}self.{{.ColumnNameRust}});
+    {{- end }}
+
+        let res = deleter.delete(session)?;
+
+        Ok(())
+    }
+
 }
 
 {{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
@@ -298,7 +319,7 @@ impl {{ $deleterType}} {
     }
     {{ end }}
 
-    pub fn delete(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
+    pub fn delete(&mut self, session: &CurrentSession) -> Result<(),CWError> {
         let del_col = self.delete_cols.join(", ");
 
         let  mut where_str = vec![];
@@ -317,7 +338,9 @@ impl {{ $deleterType}} {
         let query_values = QueryValues::SimpleValues(where_arr);
         println!("{} - {:?}", &cql_query, &query_values);
 
-        session.query_with_values(cql_query, query_values)
+        session.query_with_values(cql_query, query_values)?;
+
+        Ok(())
     }
 
     {{ .GetRustWheresTmplOut }}
