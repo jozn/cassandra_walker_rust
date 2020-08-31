@@ -203,14 +203,14 @@ func (table *TableOut) GetRustModelSavePartial() string {
 		switch col.TypeRust {
 		case "String", "&str", "Vec<u8>":
 			T = `
-		if self.{{.ColumnNameRust}}.is_empty() {
+		if !self.{{.ColumnNameRust}}.is_empty() {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
        	}
 `
 		default:
 			T = `
-		if self.{{.ColumnNameRust}} == {{.TypeDefaultRust}} {
+		if self.{{.ColumnNameRust}} != {{.TypeDefaultRust}} {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
        	}

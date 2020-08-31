@@ -65,7 +65,7 @@ impl {{ .TableNameRust }} {
         let mut cql_question = "?,".repeat(columns.len());
         cql_question.remove(cql_question.len()-1);
 
-        let cql_query = format!("INSERT INTO {{ .TableSchemeOut }} {} VALUES {}", cql_columns, cql_question);
+        let cql_query = format!("INSERT INTO {{ .TableSchemeOut }} ({}) VALUES ({})", cql_columns, cql_question);
 
         println!("{} - {}", &cql_query, &cql_question);
 
@@ -192,7 +192,7 @@ impl {{ $selectorType }} {
         for db_row in db_raws {
             let mut row = {{ .TableNameRust }}::default();
             {{range .Columns }}
-            row.{{ .ColumnNameRust }} = db_row.by_name("{{ .ColumnName }} ")?.unwrap_or_default();
+            row.{{ .ColumnNameRust }} = db_row.by_name("{{ .ColumnName }}")?.unwrap_or_default();
             {{- end }}
 
             rows.push(row);
