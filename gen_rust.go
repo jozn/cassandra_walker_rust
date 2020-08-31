@@ -193,30 +193,7 @@ func (table *TableOut) GetRustSelectorOrders() string {
 
 // Models (save, delete, update)
 
-func (table *TableOut) GetRustModelSave() string {
-	const TPL_HEADER = `
-    pub fn save2(&mut self, session: &CurrentSession) -> Result<(),CWError> {
-        let mut columns = vec![];
-        let mut values :Vec<Value> = vec![];
-`
-	const TPL_FOOTER = `
-        if columns.len() == 0 {
-            return Err(CWError::InvalidCQL)
-        }
-
-        let cql_columns = columns.join(", ");
-        let mut cql_question = "?,".repeat(columns.len());
-        cql_question.remove(cql_question.len()-1);
-
-        let cql_query = format!("INSERT INTO {{ .TableSchemeOut }} {} VALUES {}", cql_columns, cql_question);
-
-        println!("{} - {}", &cql_query, &cql_question);
-
-        session.query_with_values(cql_query, values)?;
-
-        Ok(())
-    }
-`
+func (table *TableOut) GetRustModelSavePartial() string {
 	fnsOut := []string{}
 
 	for i := 0; i < len(table.Columns); i++ {
@@ -229,21 +206,20 @@ func (table *TableOut) GetRustModelSave() string {
 		if self.{{.ColumnNameRust}}.is_empty() {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
-       }
+       	}
 `
 		default:
 			T = `
 		if self.{{.ColumnNameRust}} == {{.TypeDefaultRust}} {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
-       }
+       	}
 `
 		}
 		fnStr := rawTemplateOutput(T, col)
 		fnsOut = append(fnsOut, fnStr)
 	}
-	middle := strings.Join(fnsOut, "")
-	out := fmt.Sprintf("%s %s %s", TPL_HEADER, middle, TPL_FOOTER)
+	out := strings.Join(fnsOut, "")
 	return out
 }
 

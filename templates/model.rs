@@ -51,28 +51,11 @@ impl {{ .TableNameRust }} {
         deleter.delete(session)
     }
 
-    {{ .GetRustModelSave }}
-
     pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
         let mut columns = vec![];
         let mut values :Vec<Value> = vec![];
 
-	{{range .Columns }}
-        if self.{{.ColumnNameRust}} ==  {{.TypeDefaultRust}}{
-            columns.push("{{.ColumnName}}");
-            values.push(self.{{.ColumnName}}.clone().into());
-        }
-
-	{{end}}
-
-        if self.tweet_id == "" {
-            columns.push("teweet_id");
-            values.push(self.tweet_id.clone().into());
-        }
-
-        if self.user_id.eq(&0i64) {
-            columns.push("teweet_id");
-        }
+        {{ .GetRustModelSavePartial }}
 
         if columns.len() == 0 {
             return Err(CWError::InvalidCQL)
