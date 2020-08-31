@@ -34,23 +34,6 @@ impl {{ .TableNameRust }} {
         self._exists
     }
 
-   /* pub fn delete2(&mut self, session: &CurrentSession) -> cdrs::error::Result<Frame> {
-        let mut deleter = Tweet_Deleter::new();
-        {{ range $i, $col := .PartitionColumns }}
-            {{- if (eq $i 0)}}
-        //deleter.{{$col.ColumnNameRust}}_eq(&self.{{$col.ColumnNameRust}});
-            {{- else}}
-        //deleter.and_{{$col.ColumnNameRust}}_eq(&self.{{$col.ColumnNameRust}});
-            {{end}}
-        {{- end }}
-
-        {{- range .ClusterColumns }}
-        //deleter.and_{{.ColumnNameRust}}_eq(&self.{{.ColumnNameRust}});
-        {{- end }}
-
-        deleter.delete(session)
-    }*/
-
     pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
         let mut columns = vec![];
         let mut values :Vec<Value> = vec![];
