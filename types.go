@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"strings"
-
-	"github.com/golang/protobuf/protoc-gen-go/generator"
 )
 
 type GenOut struct {
@@ -89,7 +87,7 @@ func setTableParams(gen *GenOut) {
 			Comment:        fmt.Sprintf("table: %s", table.TableName),
 			TableShortName: shortname(table.TableName),
 			TableSchemeOut: table.Keyspace + "." + table.TableName,
-			TableNameGo:    generator.CamelCase(table.TableName),
+			TableNameGo:    CamelCase(table.TableName),
 			PrefixHidden:   "",
 			GenOut:         gen,
 			// Rust
@@ -104,7 +102,7 @@ func setTableParams(gen *GenOut) {
 			typRs, typOrgRs, defRs := cqlTypesToRustType(col.TypeCql)
 			c := &ColumnOut{
 				CColumn:        *col,
-				ColumnNameGO:   generator.CamelCase(col.ColumnName),
+				ColumnNameGO:   CamelCase(col.ColumnName),
 				TypeGo:         typGo,
 				TypeGoOriginal: typOrg,
 				TypeDefaultGo:  defGo,
