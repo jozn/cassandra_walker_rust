@@ -8,6 +8,5 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/jozn/cassandra-walker v0.0.0-20181127204913-7d621245e7c6
 	github.com/jozn/xox v0.0.0-20171015010305-ba4f5b1a61c4
-	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
 	github.com/kr/pretty v0.2.1
 )

@@ -91,7 +91,7 @@ func templatesCommonRs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/common.rs", size: 1003, mode: os.FileMode(436), modTime: time.Unix(1598894434, 0)}
+	info := bindataFileInfo{name: "templates/common.rs", size: 1003, mode: os.FileMode(511), modTime: time.Unix(1598894434, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -111,7 +111,7 @@ func templatesCommonTgo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/common.tgo", size: 1795, mode: os.FileMode(436), modTime: time.Unix(1597299634, 0)}
+	info := bindataFileInfo{name: "templates/common.tgo", size: 1795, mode: os.FileMode(511), modTime: time.Unix(1597299634, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -131,7 +131,7 @@ func templatesModRs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/mod.rs", size: 80, mode: os.FileMode(436), modTime: time.Unix(1598546208, 0)}
+	info := bindataFileInfo{name: "templates/mod.rs", size: 80, mode: os.FileMode(511), modTime: time.Unix(1598546208, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -151,7 +151,7 @@ func templatesModelRs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/model.rs", size: 9136, mode: os.FileMode(436), modTime: time.Unix(1598908431, 0)}
+	info := bindataFileInfo{name: "templates/model.rs", size: 9136, mode: os.FileMode(511), modTime: time.Unix(1598908431, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -171,7 +171,7 @@ func templatesModelTgo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/model.tgo", size: 12650, mode: os.FileMode(436), modTime: time.Unix(1597299634, 0)}
+	info := bindataFileInfo{name: "templates/model.tgo", size: 12650, mode: os.FileMode(511), modTime: time.Unix(1597299634, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -191,7 +191,7 @@ func templatesModel___migrationTgo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/model___migration.tgo", size: 10923, mode: os.FileMode(436), modTime: time.Unix(1598548976, 0)}
+	info := bindataFileInfo{name: "templates/model___migration.tgo", size: 10923, mode: os.FileMode(511), modTime: time.Unix(1598548976, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -211,7 +211,7 @@ func templatesModels_typesRs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/models_types.rs", size: 863, mode: os.FileMode(436), modTime: time.Unix(1598545219, 0)}
+	info := bindataFileInfo{name: "templates/models_types.rs", size: 863, mode: os.FileMode(511), modTime: time.Unix(1598545219, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -231,7 +231,7 @@ func templatesModels_typesTgo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/models_types.tgo", size: 614, mode: os.FileMode(436), modTime: time.Unix(1598440918, 0)}
+	info := bindataFileInfo{name: "templates/models_types.tgo", size: 614, mode: os.FileMode(511), modTime: time.Unix(1598440918, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -251,7 +251,7 @@ func templatesNot_usedTgo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/not_used.tgo", size: 921, mode: os.FileMode(436), modTime: time.Unix(1597299634, 0)}
+	info := bindataFileInfo{name: "templates/not_used.tgo", size: 921, mode: os.FileMode(511), modTime: time.Unix(1597299634, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
