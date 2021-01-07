@@ -14,14 +14,14 @@ import (
 func buildRust(gen *GenOut) {
 	//buildGo(gen) // temp
 
-	writeOutput("xc_models.rs", buildFromTemplate("models_types.rs", gen))
-	writeOutput("common.rs", buildFromTemplate("common.rs", gen))
+	writeOutput("xc_models.rs", buildFromTemplate("rust/models_types.rs", gen))
+	writeOutput("common.rs", buildFromTemplate("rust/common.rs", gen))
 
 	//writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
 
 	for _, t := range gen.Tables {
 		fileName := fmt.Sprintf("%s.rs", t.TableName)
-		writeOutput(fileName, buildFromTemplate("model.rs", t))
+		writeOutput(fileName, buildFromTemplate("rust/model.rs", t))
 
 		t.GetRustWheresTmplOut()
 	}
