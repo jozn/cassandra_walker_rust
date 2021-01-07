@@ -8,22 +8,23 @@ import (
 )
 
 type GenOut struct {
-	TablesExtracted   []*Table
+	TablesExtracted   []*CTable
 	Tables            []*TableOut
 	KeyspacesDescribe []string
 	Package           string
 }
 
-type Table struct {
+// A table in cassandra
+type CTable struct {
 	TableName string
 	Keyspace  string
-	Columns   []*Column
-	//PartitionColumns []*Column
-	//ClusterColumns   []*Column
+	Columns   []*CColumn
+	//PartitionColumns []*CColumn
+	//ClusterColumns   []*CColumn
 }
 
 type TableOut struct {
-	Table
+	CTable
 	Columns          []*ColumnOut
 	PartitionColumns []*ColumnOut
 	ClusterColumns   []*ColumnOut
@@ -38,7 +39,8 @@ type TableOut struct {
 	TableNameRust string
 }
 
-type Column struct {
+// A column in cassandra
+type CColumn struct {
 	ColumnName   string
 	Kind         string
 	Position     int
@@ -49,7 +51,7 @@ type Column struct {
 }
 
 type ColumnOut struct {
-	Column
+	CColumn
 	ColumnNameGO   string
 	OutNameShorted string
 	TypeGo         string
@@ -83,7 +85,7 @@ type WhereModifierIns struct {
 func setTableParams(gen *GenOut) {
 	for _, table := range gen.TablesExtracted {
 		t := &TableOut{
-			Table:          *table,
+			CTable:         *table,
 			Comment:        fmt.Sprintf("table: %s", table.TableName),
 			TableShortName: shortname(table.TableName),
 			TableSchemeOut: table.Keyspace + "." + table.TableName,
@@ -101,7 +103,7 @@ func setTableParams(gen *GenOut) {
 			typGo, typOrg, defGo := cqlTypesToGoType(col.TypeCql)
 			typRs, typOrgRs, defRs := cqlTypesToRustType(col.TypeCql)
 			c := &ColumnOut{
-				Column:         *col,
+				CColumn:        *col,
 				ColumnNameGO:   generator.CamelCase(col.ColumnName),
 				TypeGo:         typGo,
 				TypeGoOriginal: typOrg,
@@ -355,7 +357,7 @@ func (col *ColumnOut) RustBorrowSign() string {
 	return o
 }
 
-func (col *Column) IsNumber() bool {
+func (col *CColumn) IsNumber() bool {
 	nums := []string{"int", "serial", "tinyint", "smallint", "bigint",
 		"decimal", "float"}
 	for i := 0; i < len(nums); i++ {
@@ -368,7 +370,7 @@ func (col *Column) IsNumber() bool {
 
 // For sorting
 
-type ColumnsSortable []*Column
+type ColumnsSortable []*CColumn
 
 func (a ColumnsSortable) Len() int            { return len(a) }
 func (a ColumnsSortable) Swap(i, j int)       { a[i], a[j] = a[j], a[i] }

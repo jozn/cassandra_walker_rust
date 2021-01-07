@@ -18,7 +18,7 @@ func describeKeyspace(keyspace string, gen *GenOut, cluster *gocql.ClusterConfig
 	// iter := session.Query(`DESCRIBE ` + keyspace + ";").String()
 }
 
-func loadTables(keyspace string, cluster *gocql.ClusterConfig) []*Table {
+func loadTables(keyspace string, cluster *gocql.ClusterConfig) []*CTable {
 	cluster.Keyspace = keyspace
 	session, err := cluster.CreateSession()
 	if err != nil {
@@ -30,10 +30,10 @@ func loadTables(keyspace string, cluster *gocql.ClusterConfig) []*Table {
 	//iter := session.Query(`SELECT * FROM system_schema.tables`).Iter()
 	//iter := session.Query(`SELECT * FROM columns `).Iter()
 	m := make(map[string]interface{}, 100)
-	var tables []*Table
+	var tables []*CTable
 	for iter.MapScan(m) {
 		//PertyPrint(m)
-		t := &Table{
+		t := &CTable{
 			TableName: (m["table_name"]).(string),
 			Keyspace:  (m["keyspace_name"]).(string),
 		}
@@ -44,7 +44,7 @@ func loadTables(keyspace string, cluster *gocql.ClusterConfig) []*Table {
 	return tables
 }
 
-func loadColumns(tables []*Table, cluster *gocql.ClusterConfig) {
+func loadColumns(tables []*CTable, cluster *gocql.ClusterConfig) {
 	for _, table := range tables {
 		cluster.Keyspace = table.Keyspace
 		session, _ := cluster.CreateSession()
@@ -54,7 +54,7 @@ func loadColumns(tables []*Table, cluster *gocql.ClusterConfig) {
 		m := make(map[string]interface{}, 100)
 		for iter.MapScan(m) {
 			PertyPrint(m)
-			t := &Column{
+			t := &CColumn{
 				ColumnName: (m["column_name"]).(string),
 				TypeCql:    (m["type"]).(string),
 				Position:   (m["position"]).(int),
