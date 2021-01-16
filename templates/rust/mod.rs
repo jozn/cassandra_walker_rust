@@ -1,3 +1,6 @@
+pub mod common;
+pub use common::*;
+
 {{range .Tables}}
 pub mod {{ .TableName }};
 {{- end}}

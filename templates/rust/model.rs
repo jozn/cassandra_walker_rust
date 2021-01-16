@@ -13,6 +13,7 @@ use cdrs::types::ByName;
 use std::collections::HashMap;
 use std::result::Result; // override prelude Result
 
+use cdrs::error::{Error as CWError};
 use crate::xc::common::*;
 
 {{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
@@ -24,18 +25,18 @@ pub struct {{ .TableNameRust }} {
     {{range .Columns -}}
     pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  {{ .Position }}
     {{end}}
-    _exists: bool,
-    _deleted: bool,
+    //_exists: bool,
+    //_deleted: bool,
 }
 
 impl {{ .TableNameRust }} {
-    pub fn deleted(&self) -> bool {
+    /*pub fn deleted(&self) -> bool {
         self._deleted
     }
 
     pub fn exists(&self) -> bool {
         self._exists
-    }
+    }*/
 
     pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
         let mut columns = vec![];
@@ -195,7 +196,11 @@ impl {{ $selectorType }} {
         for db_row in db_raws {
             let mut row = {{ .TableNameRust }}::default();
             {{range .Columns }}
+                {{if (eq .TypeCql "blob")}}
+            row.{{ .ColumnNameRust }} = db_row.by_name::<Blob>("{{ .ColumnName }}")?.unwrap_or(Blob::new(vec![])).into_vec();
+                {{- else}}
             row.{{ .ColumnNameRust }} = db_row.by_name("{{ .ColumnName }}")?.unwrap_or_default();
+                {{- end}}
             {{- end }}
 
             rows.push(row);

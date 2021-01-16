@@ -79,6 +79,10 @@ func cqlTypesToRustType(sqlType string) (typ, org, def string) {
 		typ = "String"
 		org = "string"
 		def = `""`
+	//case "bytes", "blob":
+	//	typ = "Blob"
+	//	org = "&Blob"
+	//	def = `Blob::new(vec![])`
 	case "bytes", "blob":
 		typ = "Vec<u8>"
 		org = "&Vec<u8>"

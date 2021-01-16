@@ -138,6 +138,13 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
         self
     }
 `
+
+	const TPL_BLOB = `
+    pub fn update_{{ .Col.ColumnNameRust }}(&mut self, val: {{ .Col.TypeRustBorrow }}) -> &mut Self {
+        self.updates.insert("{{ .Col.ColumnName }} = ?", Blob::new(val.clone()).into());
+        self
+    }
+`
 	fnsOut := []string{}
 
 	for i := 0; i < len(table.Columns); i++ {
@@ -150,7 +157,15 @@ func (table *TableOut) GetRustUpdaterFnsOut() string {
 			table, col,
 		}
 
-		fnStr := rawTemplateOutput(TPL, parm)
+		var fnStr string
+
+		// Due to cdrs lib limitation we should treat blob differently
+		if col.TypeCql == "blob" {
+			fnStr = rawTemplateOutput(TPL_BLOB, parm)
+		} else {
+			fnStr = rawTemplateOutput(TPL, parm)
+		}
+
 		//fmt.Println(fnStr)
 		fnsOut = append(fnsOut, fnStr)
 	}
