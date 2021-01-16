@@ -13,7 +13,9 @@ use cdrs::types::ByName;
 use std::collections::HashMap;
 use std::result::Result; // override prelude Result
 
-use cdrs::error::{Error as CWError};
+//use cdrs::error::{Error as CWError};
+use cdrs::frame::frame_error::CDRSError;
+use cdrs::Error as DriverError;
 use crate::xc::common::*;
 
 {{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
