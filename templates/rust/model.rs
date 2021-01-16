@@ -40,7 +40,7 @@ impl {{ .TableNameRust }} {
         self._exists
     }*/
 
-    pub fn save(&mut self, session: &CurrentSession) -> Result<(),CWError> {
+    pub fn save(&mut self, session: impl FCQueryExecutor) -> Result<(),CWError> {
         let mut columns = vec![];
         let mut values :Vec<Value> = vec![];
 
@@ -63,7 +63,7 @@ impl {{ .TableNameRust }} {
         Ok(())
     }
 
-    pub fn delete(&mut self, session: &CurrentSession) -> Result<(), CWError> {
+    pub fn delete(&mut self, session: impl FCQueryExecutor) -> Result<(), CWError> {
         let mut deleter = {{$deleterType}}::new();
 
     {{- range $i, $col := .PartitionColumns }}
@@ -166,7 +166,7 @@ impl {{ $selectorType }} {
         (cql_query, where_values)
     }
 
-    pub fn _get_rows_with_size(&mut self,session: &CurrentSession, size: i64) -> Result<Vec<{{ .TableNameRust }}>, CWError>   {
+    pub fn _get_rows_with_size(&mut self,session: impl FCQueryExecutor, size: i64) -> Result<Vec<{{ .TableNameRust }}>, CWError>   {
 
         let(cql_query, query_values) = self._to_cql();
 
@@ -211,11 +211,11 @@ impl {{ $selectorType }} {
         Ok(rows)
     }
 
-    pub fn get_rows(&mut self, session: &CurrentSession) -> Result<Vec<{{ .TableNameRust }}>, CWError>{
+    pub fn get_rows(&mut self, session: impl FCQueryExecutor) -> Result<Vec<{{ .TableNameRust }}>, CWError>{
         self._get_rows_with_size(session,-1)
     }
 
-    pub fn get_row(&mut self, session: &CurrentSession) -> Result<{{ .TableNameRust }}, CWError>{
+    pub fn get_row(&mut self, session: impl FCQueryExecutor) -> Result<{{ .TableNameRust }}, CWError>{
         let rows = self._get_rows_with_size(session,1)?;
 
         let opt = rows.get(0);
@@ -251,7 +251,7 @@ impl {{ $updaterType}} {
         {{ $updaterType}}::default()
     }
 
-    pub fn update(&mut self,session: &CurrentSession) -> cdrs::error::Result<Frame>  {
+    pub fn update(&mut self,session: impl FCQueryExecutor) -> cdrs::error::Result<Frame>  {
         if self.updates.is_empty() {
             return Err(cdrs::error::Error::General("empty".to_string()));
         }
@@ -308,7 +308,7 @@ impl {{ $deleterType}} {
     }
     {{ end }}
 
-    pub fn delete(&mut self, session: &CurrentSession) -> Result<(),CWError> {
+    pub fn delete(&mut self, session: impl FCQueryExecutor) -> Result<(),CWError> {
         let del_col = self.delete_cols.join(", ");
 
         let  mut where_str = vec![];
