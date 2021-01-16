@@ -15,6 +15,9 @@ use std::result::Result; // override prelude Result
 
 use crate::xc::common::*;
 
+{{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
+{{- $updaterType := printf "%s%s_Updater" .PrefixHidden .TableNameRust}}
+{{- $selectorType := printf "%s%s_Selector" .PrefixHidden .TableNameRust}}
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct {{ .TableNameRust }} {
@@ -58,7 +61,7 @@ impl {{ .TableNameRust }} {
     }
 
     pub fn delete(&mut self, session: &CurrentSession) -> Result<(), CWError> {
-        let mut deleter = Tweet_Deleter::new();
+        let mut deleter = {{$deleterType}}::new();
 
     {{- range $i, $col := .PartitionColumns }}
       {{if (eq $i 0) }}
@@ -78,10 +81,6 @@ impl {{ .TableNameRust }} {
     }
 
 }
-
-{{- $deleterType := printf "%s%s_Deleter" .PrefixHidden .TableNameRust}}
-{{- $updaterType := printf "%s%s_Updater" .PrefixHidden .TableNameRust}}
-{{- $selectorType := printf "%s%s_Selector" .PrefixHidden .TableNameRust}}
 
 fn _get_where(wheres: Vec<WhereClause>) ->  (String, Vec<Value>) {
     let mut values = vec![];
@@ -205,11 +204,11 @@ impl {{ $selectorType }} {
         Ok(rows)
     }
 
-    pub fn get_rows(&mut self, session: &CurrentSession) -> Result<Vec<Tweet>, CWError>{
+    pub fn get_rows(&mut self, session: &CurrentSession) -> Result<Vec<{{ .TableNameRust }}>, CWError>{
         self._get_rows_with_size(session,-1)
     }
 
-    pub fn get_row(&mut self, session: &CurrentSession) -> Result<Tweet, CWError>{
+    pub fn get_row(&mut self, session: &CurrentSession) -> Result<{{ .TableNameRust }}, CWError>{
         let rows = self._get_rows_with_size(session,1)?;
 
         let opt = rows.get(0);
