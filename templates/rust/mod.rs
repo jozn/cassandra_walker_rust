@@ -1,7 +1,7 @@
-mod common;
-mod tweet;
-mod xc_models;
+{{range .Tables}}
+pub mod {{ .TableName }};
+{{- end}}
 
-pub use xc_models::*;
-pub use tweet::*;
-
+{{range .Tables}}
+pub use {{ .TableName }}::*;
+{{- end}}

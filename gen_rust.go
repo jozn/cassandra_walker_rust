@@ -16,6 +16,7 @@ func buildRust(gen *GenOut) {
 
 	writeOutput("xc_models.rs", buildFromTemplate("rust/models_types.rs", gen))
 	writeOutput("common.rs", buildFromTemplate("rust/common.rs", gen))
+	writeOutput("mod.rs", buildFromTemplate("rust/mod.rs", gen))
 
 	//writeOutput("xc_common.go", buildFromTemplate("common.tgo", gen))
 
