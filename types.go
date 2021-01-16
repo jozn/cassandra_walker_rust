@@ -347,9 +347,9 @@ func (table *TableOut) ColumnNamesParams() string {
 func (col *ColumnOut) RustBorrowSign() string {
 	o := ""
 	switch col.TypeRust {
-	case "String" , "Vec<u8>":
+	case "String", "Vec<u8>":
 		o = "&"
-	case "i32" , "i64", "f64" ,"f32" , "&str":
+	case "i32", "i64", "f64", "f32", "&str":
 		o = ""
 	}
 	return o

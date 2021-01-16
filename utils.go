@@ -325,5 +325,3 @@ func CamelCase(s string) string {
 	}
 	return string(t)
 }
-
-
