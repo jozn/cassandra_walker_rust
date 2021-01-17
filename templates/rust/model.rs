@@ -5,6 +5,7 @@ use cdrs::load_balancing::RoundRobin;
 // use cdrs::query::*;
 use cdrs::query::{QueryValues,QueryExecutor};
 use cdrs::frame::Frame;
+use cdrs::types::value::ValueType;
 
 use cdrs::frame::IntoBytes;
 use cdrs::types::from_cdrs::FromCDRSByName;

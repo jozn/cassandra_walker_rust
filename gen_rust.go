@@ -217,21 +217,47 @@ func (table *TableOut) GetRustModelSavePartial() string {
 		col := table.Columns[i]
 
 		T := ""
-		switch col.TypeRust {
-		case "String", "&str", "Vec<u8>":
+
+		// this columns can not be not set so do not check for them
+		if col.IsPartition || col.IsClustering {
 			T = `
+		// partition key and clustering key always must be present
+		columns.push("{{.ColumnName}}");
+        values.push(self.{{.ColumnName}}.clone().into());
+`
+		} else { // regular coulmn could be not set
+			switch col.TypeRust {
+			case "String", "&str":
+				T = `
 		if !self.{{.ColumnNameRust}}.is_empty() {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
        	}
 `
-		default:
-			T = `
+				// type blob in cassandra: cdrs driver somehow corrupt vec<u8> when into() is called
+				// it produces a vec<u8> of much bigger size with different values. This code is a
+				// work around this bug/implementaion
+			case "Vec<u8>":
+				T = `
+		if !self.{{.ColumnNameRust}}.is_empty() {
+            let val = Value{
+                body: self.{{.ColumnName}}.clone(),
+                value_type: ValueType::Normal(self.{{.ColumnName}}.len() as i32)
+            };
+
+            columns.push("{{.ColumnName}}");
+            values.push(val);
+       	}
+`
+			default:
+				T = `
 		if self.{{.ColumnNameRust}} != {{.TypeDefaultRust}} {
             columns.push("{{.ColumnName}}");
             values.push(self.{{.ColumnName}}.clone().into());
        	}
 `
+			}
+
 		}
 		fnStr := rawTemplateOutput(T, col)
 		fnsOut = append(fnsOut, fnStr)
