@@ -28,9 +28,10 @@ func buildRust(gen *GenOut) {
 	}
 
 	if true {
-		dirOut := path.Join(args.Dir, args.Package)
-		e1 := exec.Command("cargo fmt", dirOut).Run()
-		errLog("gofmt", e1)
+		dirOut := strings.Replace(args.Dir, "src/", "", -1)
+		e1 := os.Chdir(dirOut)
+		e1 = exec.Command("cargo fmt").Run()
+		errLog("cargo fmt", e1)
 	}
 }
 

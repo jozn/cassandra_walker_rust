@@ -24,23 +24,13 @@ use crate::xc::common::*;
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct {{ .TableNameRust }} {
-    {{range .Columns -}}
+    {{- range .Columns}}
     pub {{ .ColumnNameRust }}: {{ .TypeRust }},   // {{ .ColumnName }}    {{ .Kind }}  {{ .Position }}
-    {{end}}
-    //_exists: bool,
-    //_deleted: bool,
+    {{- end}}
 }
 
 impl {{ .TableNameRust }} {
-    /*pub fn deleted(&self) -> bool {
-        self._deleted
-    }
-
-    pub fn exists(&self) -> bool {
-        self._exists
-    }*/
-
-    pub fn save(&mut self, session: impl FCQueryExecutor) -> Result<(),CWError> {
+    pub fn save(&self, session: impl FCQueryExecutor) -> Result<(),CWError> {
         let mut columns = vec![];
         let mut values :Vec<Value> = vec![];
 
@@ -63,7 +53,7 @@ impl {{ .TableNameRust }} {
         Ok(())
     }
 
-    pub fn delete(&mut self, session: impl FCQueryExecutor) -> Result<(), CWError> {
+    pub fn delete(&self, session: impl FCQueryExecutor) -> Result<(), CWError> {
         let mut deleter = {{$deleterType}}::new();
 
     {{- range $i, $col := .PartitionColumns }}
