@@ -349,48 +349,6 @@ pub fn {{ .FnName }}(session: impl FCQueryExecutor, {{ .FnParam }}) -> Result<{{
 	out := rawTemplateOutput(TPL, parm)
 
 	return out
-
-	/*
-		//=============== Make fn name ===============
-		fnName := fmt.Sprintf("get_%s_by_", table.TableNameRust) //todo
-		for i := 0; i < len(table.PartitionColumns); i++ {
-			col := table.Columns[i]
-			if i == 0 {
-				fnName = fnName + col.ColumnNameRust
-			}else {
-				fnName = fnName +"_and" + col.ColumnNameRust
-			}
-		}
-		// Clustering
-		for i := 0; i < len(table.ClusterColumns); i++ {
-			col := table.Columns[i]
-			fnName = fnName +"_and" + col.ColumnNameRust
-		}
-
-		//=============== Make fn param ===============
-		var fnParamArr []string
-		paramCnt := 1
-		for i := 0; i < len(table.PartitionColumns); i++ {
-			col := table.Columns[i]
-			s := fmt.Sprintf("p%d :%s", paramCnt, col.TypeRust)
-			fnParamArr = append(fnParamArr, s)
-			paramCnt+=1
-		}
-		for i := 0; i < len(table.ClusterColumns); i++ {
-			col := table.Columns[i]
-			s := fmt.Sprintf("p%d :%s", paramCnt, col.TypeRust)
-			fnParamArr = append(fnParamArr, s)
-			paramCnt+=1
-		}
-		fnParamStr := fmt.Sprintf("(%s)",strings.Join(fnParamArr,","))
-
-		// Clustering
-		for i := 0; i < len(table.ClusterColumns); i++ {
-			col := table.Columns[i]
-			fnName = fnName +"_and" + col.ColumnNameRust
-		}
-	*/
-
 }
 
 // Utils - not used
