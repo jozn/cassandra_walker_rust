@@ -331,4 +331,3 @@ impl {{ $deleterType}} {
 {{ .GetRustPrimaryGetter }}
 
 {{$table := . }}
-

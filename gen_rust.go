@@ -266,7 +266,7 @@ func (table *TableOut) GetRustModelSavePartial() string {
 	return out
 }
 
-// Pirmary Getters
+// Primary Getters
 type _RustGetter_ struct {
 	fnName    string
 	paramName string
@@ -281,7 +281,7 @@ func (table *TableOut) GetRustPrimaryGetter() string {
 	paramCnt := 1
 	// Partion keys
 	for i := 0; i < len(table.PartitionColumns); i++ {
-		col := table.Columns[i]
+		col := table.PartitionColumns[i]
 
 		param := fmt.Sprintf("p%d", paramCnt)
 		fnName := col.ColumnNameRust
@@ -303,7 +303,7 @@ func (table *TableOut) GetRustPrimaryGetter() string {
 
 	// Clustering keys
 	for i := 0; i < len(table.ClusterColumns); i++ {
-		col := table.Columns[i]
+		col := table.ClusterColumns[i]
 
 		param := fmt.Sprintf("p%d", paramCnt)
 		f := _RustGetter_{
