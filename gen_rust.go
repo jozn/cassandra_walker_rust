@@ -266,6 +266,133 @@ func (table *TableOut) GetRustModelSavePartial() string {
 	return out
 }
 
+// Pirmary Getters
+type _RustGetter_ struct {
+	fnName    string
+	paramName string
+	paramType string
+	callName  string
+}
+
+// This produces Getter by primary key [whether this functionality was worth the effort is a good question]
+func (table *TableOut) GetRustPrimaryGetter() string {
+	//============== Fill Array ===============
+	arr := []_RustGetter_{}
+	paramCnt := 1
+	// Partion keys
+	for i := 0; i < len(table.PartitionColumns); i++ {
+		col := table.Columns[i]
+
+		param := fmt.Sprintf("p%d", paramCnt)
+		fnName := col.ColumnNameRust
+		callName := fmt.Sprintf("%s_eq(%s)", col.ColumnNameRust, param)
+		if i > 0 {
+			fnName = fmt.Sprintf("_and_%s", col.ColumnNameRust)
+			callName = fmt.Sprintf("and_%s_eq(%s)", col.ColumnNameRust, param)
+		}
+
+		f := _RustGetter_{
+			fnName:    fnName,
+			paramName: param,
+			paramType: col.TypeRust,
+			callName:  callName,
+		}
+		arr = append(arr, f)
+		paramCnt += 1
+	}
+
+	// Clustering keys
+	for i := 0; i < len(table.ClusterColumns); i++ {
+		col := table.Columns[i]
+
+		param := fmt.Sprintf("p%d", paramCnt)
+		f := _RustGetter_{
+			fnName:    fmt.Sprintf("_and_%s", col.ColumnNameRust),
+			paramName: fmt.Sprintf("p%d", paramCnt),
+			paramType: col.TypeRust,
+			callName:  fmt.Sprintf("and_%s_eq(%s)", col.ColumnNameRust, param),
+		}
+		arr = append(arr, f)
+		paramCnt += 1
+	}
+
+	//================ Make Str Output =================
+	fnName := fmt.Sprintf("get_%s_by_", table.TableName) //todo
+	fnParam := []string{}
+	fnSetter := fmt.Sprintf("%s_Selector::new()", table.TableNameRust)
+	for i := 0; i < len(arr); i++ {
+		f := arr[i]
+		fnName += f.fnName
+		fnParam = append(fnParam, f.paramName+":"+f.paramType)
+		fnSetter += "\n\t\t." + f.callName
+	}
+
+	//================ Build ==================
+	const TPL = `
+pub fn {{ .FnName }}(session: impl FCQueryExecutor, {{ .FnParam }}) -> Result<{{.Table.TableNameRust}},CWError> {
+	let m = {{ .FnSetter }}
+		.get_row(session)?;
+	Ok(m)
+}
+`
+	parm := struct {
+		FnName   string
+		FnParam  string
+		FnSetter string
+		Table    *TableOut
+	}{
+		FnName:   fnName,
+		FnParam:  strings.Join(fnParam, ","),
+		FnSetter: fnSetter,
+		Table:    table,
+	}
+	out := rawTemplateOutput(TPL, parm)
+
+	return out
+
+	/*
+		//=============== Make fn name ===============
+		fnName := fmt.Sprintf("get_%s_by_", table.TableNameRust) //todo
+		for i := 0; i < len(table.PartitionColumns); i++ {
+			col := table.Columns[i]
+			if i == 0 {
+				fnName = fnName + col.ColumnNameRust
+			}else {
+				fnName = fnName +"_and" + col.ColumnNameRust
+			}
+		}
+		// Clustering
+		for i := 0; i < len(table.ClusterColumns); i++ {
+			col := table.Columns[i]
+			fnName = fnName +"_and" + col.ColumnNameRust
+		}
+
+		//=============== Make fn param ===============
+		var fnParamArr []string
+		paramCnt := 1
+		for i := 0; i < len(table.PartitionColumns); i++ {
+			col := table.Columns[i]
+			s := fmt.Sprintf("p%d :%s", paramCnt, col.TypeRust)
+			fnParamArr = append(fnParamArr, s)
+			paramCnt+=1
+		}
+		for i := 0; i < len(table.ClusterColumns); i++ {
+			col := table.Columns[i]
+			s := fmt.Sprintf("p%d :%s", paramCnt, col.TypeRust)
+			fnParamArr = append(fnParamArr, s)
+			paramCnt+=1
+		}
+		fnParamStr := fmt.Sprintf("(%s)",strings.Join(fnParamArr,","))
+
+		// Clustering
+		for i := 0; i < len(table.ClusterColumns); i++ {
+			col := table.Columns[i]
+			fnName = fnName +"_and" + col.ColumnNameRust
+		}
+	*/
+
+}
+
 // Utils - not used
 func eachColumn(table *TableOut, tpl string) string {
 	fnsOut := []string{}

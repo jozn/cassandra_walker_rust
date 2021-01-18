@@ -6,6 +6,10 @@ import (
 	"github.com/gocql/gocql"
 )
 
+/*
+todo: add check if primiry key and clustring key is present when saving in rust.
+*/
+
 const (
 	DEFAULT_CLUSTER_ADDRESS = "127.0.0.1"
 	DEFAULT_PORT            = 9042

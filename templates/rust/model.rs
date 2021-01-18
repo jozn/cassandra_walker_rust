@@ -328,6 +328,7 @@ impl {{ $deleterType}} {
     {{ .GetRustWhereInsTmplOut }}
 }
 
+{{ .GetRustPrimaryGetter }}
 
 {{$table := . }}
 
